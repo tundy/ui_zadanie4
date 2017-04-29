@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26403.7
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ui_zadanie4", "ui_zadanie4\ui_zadanie4.csproj", "{A1DBDEB7-BCAC-4079-BFA1-E2C2C5D56C2D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A1DBDEB7-BCAC-4079-BFA1-E2C2C5D56C2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1DBDEB7-BCAC-4079-BFA1-E2C2C5D56C2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1DBDEB7-BCAC-4079-BFA1-E2C2C5D56C2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1DBDEB7-BCAC-4079-BFA1-E2C2C5D56C2D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
