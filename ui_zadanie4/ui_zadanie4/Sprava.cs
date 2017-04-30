@@ -12,7 +12,8 @@ namespace ui_zadanie4
 
             public override bool DoWork(Dictionary<string, string> parameters)
             {
-                Window.Output.AppendText($"{ToString(parameters, false)}\n");
+                var temp = ToString(parameters, false);
+                Window.Output.AppendText($"{temp.Substring(1, temp.Length-2)}\n");
                 return false;
             }
         }
