@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
@@ -29,23 +28,86 @@ namespace ui_zadanie4
         public MainWindow()
         {
             InitializeComponent();
+
+            Memory.AppendText(@"(Peter je rodic Jano)
+(Peter je rodic Vlado)
+(manzelia Peter Eva)
+(Vlado je rodic Maria)
+(Vlado je rodic Viera)
+(muz Peter)
+(muz Jano)
+(muz Vlado)
+(zena Maria)
+(zena Viera)
+(zena Eva)");
+
+            Rules.AppendText(@" DruhyRodic1:
+AK ((?X je rodic ?Y)(manzelia ?X ?Z))
+POTOM ((pridaj ?Z je rodic ?Y))
+
+DruhyRodic2:
+AK ((?X je rodic ?Y)(manzelia ?Z ?X))
+POTOM ((pridaj ?Z je rodic ?Y))
+
+Otec:
+AK ((?X je rodic ?Y)(muz ?X))
+POTOM ((pridaj ?X je otec ?Y))
+
+Matka:
+AK ((?X je rodic ?Y)(zena ?X))
+POTOM ((pridaj ?X je matka ?Y))
+
+Surodenci:
+AK ((?X je rodic ?Y)(?X je rodic ?Z)(<> ?Y ?Z))
+POTOM ((pridaj ?Y a ?Z su surodenci))
+
+Brat:
+AK ((?Y a ?Z su surodenci)(muz ?Y))
+POTOM ((pridaj ?Y je brat ?Z))
+
+Stryko:
+AK ((?Y je brat ?Z)(?Z je rodic ?X))
+POTOM ((pridaj ?Y je stryko ?X)(sprava ?X ma stryka))
+
+Test mazania:
+AK ((?Y je stryko ?X)(zena ?X))
+POTOM ((vymaz zena ?X))");
         }
 
         private void ParseButton_OnClick(object sender, RoutedEventArgs e)
         {
-            output.Clear();
+            Output.Clear();
+            DebugOutput.Clear();
             CleanUpMemory();
             if (!CheckMemory()) return;
             if (!ParseRules()) return;
+
+            var work = true;
+            while (work)
+            {
+                work = false;
+                foreach (var rule in _rules)
+                {
+                    foreach (var @params in rule.Check(Memory.Text))
+                    {
+                        DebugOutput.AppendText($@"{rule.Name}: ");
+                        foreach (var param in @params)
+                            DebugOutput.AppendText($@"[{param.Key}]{param.Value} ");
+                        DebugOutput.AppendText(Environment.NewLine);
+                        foreach (var action in rule.Actions)
+                            work |= action.DoWork(@params);
+                    }
+                }
+            }
         }
 
         private bool CheckMemory()
         {
-            var regex = new Regex("^\\s*(([^\\(].*)|(.*[^\\)]))\\s*$", RegexOptions.Multiline);
-            var match = regex.Match(memory.Text);
+            var regex = new Regex("^\\s*(([^\\(\\s].*)|(.*[^\\)\\s]))\\s*$", RegexOptions.Multiline);
+            var match = regex.Match(Memory.Text);
             if (match.Success)
             {
-                output.AppendText($"ERROR: Chybny zapis faktu:{Environment.NewLine}{match.Value}{Environment.NewLine}");
+                Output.AppendText($"ERROR: Chybny zapis faktu:{Environment.NewLine}{match.Value}{Environment.NewLine}");
                 return false;
             }
             return true;
@@ -56,15 +118,15 @@ namespace ui_zadanie4
         /// </summary>
         private void CleanUpMemory()
         {
-            memory.Text = string.Join("\n",
-                memory.Text.Split(new[] {'\n', '\r'}, StringSplitOptions.RemoveEmptyEntries).Distinct());
+            Memory.Text = string.Join("\n",
+                Memory.Text.Split(new[] {'\n', '\r'}, StringSplitOptions.RemoveEmptyEntries).Distinct());
         }
 
         private bool ParseRules()
         {
             _rules.Clear();
 
-            var temp = rules.Text.Trim();
+            var temp = Rules.Text.Trim();
 
             while (temp.Length > 0)
             {
@@ -72,7 +134,7 @@ namespace ui_zadanie4
                 if (!GetRuleName(rule, ref temp)) return false;
                 if (!GetRuleConditions(rule, ref temp)) return false;
                 if (!GetRuleActions(rule, ref temp)) return false;
-
+                _rules.Add(rule);
             }
             return true;
         }
@@ -81,13 +143,13 @@ namespace ui_zadanie4
         {
             if (!temp.StartsWith("POTOM", StringComparison.OrdinalIgnoreCase))
             {
-                output.AppendText($"ERROR: Chyba Akcia pre pravidlo '{rule.Name}'.{Environment.NewLine}");
+                Output.AppendText($"ERROR: Chyba Akcia pre pravidlo '{rule.Name}'.{Environment.NewLine}");
                 return false;
             }
             temp = temp.Substring(5).TrimStart();
             if (temp[0] != '(')
             {
-                output.AppendText($"ERROR: Za slovom POTOM sa nenachadza '(' v pravidle '{rule.Name}'.{Environment.NewLine}");
+                Output.AppendText($"ERROR: Za slovom POTOM sa nenachadza '(' v pravidle '{rule.Name}'.{Environment.NewLine}");
                 return false;
             }
 
@@ -100,7 +162,7 @@ namespace ui_zadanie4
                     ++level;
                     if (level > 2)
                     {
-                        output.AppendText(
+                        Output.AppendText(
                             $"ERROR: V akcii pre pravidlo '{rule.Name}' je trojite vnorenie zatvoriek.{Environment.NewLine}");
                         return false;
                     }
@@ -117,7 +179,7 @@ namespace ui_zadanie4
                         var action = GetAction(actionText);
                         if (action == null)
                         {
-                            output.AppendText($"ERROR: Neznama akcia:{Environment.NewLine}{actionText}{Environment.NewLine}");
+                            Output.AppendText($"ERROR: Neznama akcia:{Environment.NewLine}{actionText}{Environment.NewLine}");
                             return false;
                         }
                         rule.Actions.Add(action);
@@ -129,7 +191,7 @@ namespace ui_zadanie4
                 {
                     if (!char.IsWhiteSpace(temp[index]))
                     {
-                        output.AppendText(
+                        Output.AppendText(
                             $"ERROR: Chyba v pravidle '{rule.Name}'. Medzi akciami nemoze byt text.{Environment.NewLine}");
                         return false;
                     }
@@ -143,13 +205,13 @@ namespace ui_zadanie4
         {
             if (!temp.StartsWith("AK", StringComparison.OrdinalIgnoreCase))
             {
-                output.AppendText($"ERROR: Chyba podmienka pre pravidlo '{rule.Name}'.{Environment.NewLine}");
+                Output.AppendText($"ERROR: Chyba podmienka pre pravidlo '{rule.Name}'.{Environment.NewLine}");
                 return false;
             }
             temp = temp.Substring(2).TrimStart();
             if (temp[0] != '(')
             {
-                output.AppendText($"ERROR: Za slovom AK sa nenachadza '(' v pravidle '{rule.Name}'.{Environment.NewLine}");
+                Output.AppendText($"ERROR: Za slovom AK sa nenachadza '(' v pravidle '{rule.Name}'.{Environment.NewLine}");
                 return false;
             }
 
@@ -162,7 +224,7 @@ namespace ui_zadanie4
                     ++level;
                     if (level > 2)
                     {
-                        output.AppendText(
+                        Output.AppendText(
                             $"ERROR: V podmienke pre pravidlo '{rule.Name}' je trojite vnorenie zatvoriek.{Environment.NewLine}");
                         return false;
                     }
@@ -174,7 +236,7 @@ namespace ui_zadanie4
                 {
                     --level;
                     if (level == 1)
-                        rule.Conditions.Add(temp.Substring(start, index - start));
+                        rule.AddCondition(temp.Substring(start, index - start));
                     continue;
                 }
 
@@ -182,7 +244,7 @@ namespace ui_zadanie4
                 {
                     if (!char.IsWhiteSpace(temp[index]))
                     {
-                        output.AppendText(
+                        Output.AppendText(
                             $"ERROR: Chyba v pravidle '{rule.Name}'. Medzi podmienkami nemoze byt text.{Environment.NewLine}");
                         return false;
                     }
@@ -191,7 +253,7 @@ namespace ui_zadanie4
 
             if (temp.Length <= index)
             {
-                output.AppendText($"ERROR: V pravidle '{rule.Name}' sa nenachadza akcia.{Environment.NewLine}");
+                Output.AppendText($"ERROR: V pravidle '{rule.Name}' sa nenachadza akcia.{Environment.NewLine}");
                 return false;
             }
             temp = temp.Substring(index).TrimStart();
@@ -203,7 +265,7 @@ namespace ui_zadanie4
             var nameEnd = temp.IndexOf(":", StringComparison.Ordinal);
             if (nameEnd < 0)
             {
-                output.AppendText(
+                Output.AppendText(
                     $"ERROR: Chyba pocas parsovania pravidiel! Za poslednym pravidlom sa nachadza neznamy text.{Environment.NewLine}");
                 return false;
             }
@@ -211,36 +273,18 @@ namespace ui_zadanie4
             rule.Name = temp.Remove(nameEnd++);
             if (rule.Name.Contains('\n') || rule.Name.Contains('\r'))
             {
-                output.AppendText($"ERROR: Nazov pravidlu musi byt na jednom riadku '{rule.Name}'.{Environment.NewLine}");
+                Output.AppendText($"ERROR: Nazov pravidlu musi byt na jednom riadku '{rule.Name}'.{Environment.NewLine}");
                 return false;
             }
 
             if (temp.Length <= nameEnd)
             {
-                output.AppendText(
+                Output.AppendText(
                     $"ERROR: V pravidle '{rule.Name}' sa nenachadza podmienka a akcia.{Environment.NewLine}");
                 return false;
             }
             temp = temp.Substring(nameEnd).TrimStart();
             return true;
-        }
-    }
-
-    [DebuggerDisplay("Name")]
-    internal class Rule
-    {
-        public string Name;
-        public List<string> Conditions = new List<string>();
-        public List<MainWindow.Action> Actions = new List<MainWindow.Action>();
-
-        public void Check(string memory)
-        {
-            /*foreach (var condition in Conditions)
-            {
-                var reg = new Regex(condition);
-                var matchse = reg.Matches(memory);
-
-            }*/
         }
     }
 }

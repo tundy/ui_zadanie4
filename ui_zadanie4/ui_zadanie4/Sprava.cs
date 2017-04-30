@@ -6,15 +6,16 @@ namespace ui_zadanie4
 {
     public partial class MainWindow : Window
     {
-        internal class Sprava : Action
+        private class Sprava : Action
         {
-            public Sprava(string Input) : base(Input)
+            public Sprava(string input, MainWindow window) : base(input, window)
             {
             }
 
             public override bool DoWork(Dictionary<string, string> parameters)
             {
-                throw new NotImplementedException();
+                Window.Output.AppendText($"{ToString(parameters, false)}\n");
+                return false;
             }
         }
     }

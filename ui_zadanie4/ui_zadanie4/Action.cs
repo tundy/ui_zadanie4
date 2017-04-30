@@ -1,22 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows;
 
 namespace ui_zadanie4
 {
     public partial class MainWindow : Window
     {
-        private static MainWindow.Action GetAction(string text)
+        private MainWindow.Action GetAction(string text)
         {
             var parts = text.Split(new[] { ' ' }, 2, StringSplitOptions.RemoveEmptyEntries);
             switch (parts[0].ToUpper())
             {
                 case "PRIDAJ":
-                    return new Pridaj(parts[1]);
+                    return new Pridaj(parts[1], this);
                 case "VYMAZ":
-                    return new Vymaz(parts[1]);
+                    return new Vymaz(parts[1], this);
                 case "SPRAVA":
-                    return new Sprava(parts[1]);
+                    return new Sprava(parts[1], this);
                 default:
                     return null;
             }
@@ -25,10 +27,35 @@ namespace ui_zadanie4
         internal abstract class Action
         {
             public abstract bool DoWork(Dictionary<string, string> parameters);
+            protected readonly MainWindow Window;
+            private readonly List<Tuple<bool, string>> _parts = new List<Tuple<bool, string>>(4);
 
-            protected Action(string Input)
+            protected string ToString(Dictionary<string, string> Params, bool regex)
             {
-                // (^\s*\<\>\s*(\?[^\s]+)\s+(\?[^\s]+)\s*$)|(\?[^\s]+)|([^\?]+|\?\s)
+                var sb = new StringBuilder();
+                sb.Append(regex ? "^\\s*\\(" : "(");
+                foreach (var part in _parts)
+                    if (part.Item1 && Params.ContainsKey(part.Item2))
+                        sb.Append(regex ? $"({Params[part.Item2]})" : Params[part.Item2]);
+                    else
+                        sb.Append(part.Item2);
+                sb.Append(regex ? "\\)\\s*$" : ")");
+                return sb.ToString();
+            }
+
+            protected Action(string input, MainWindow window)
+            {
+                Window = window;
+                var regex = new Regex("(\\?[^\\s]+)|([^\\?]+|\\?[^\\s]{0})");
+                var matches = regex.Matches(input);
+                foreach (Match m in matches)
+                {
+                    var part = m.Value;
+                    if (part[0] != '?' || part.Length == 1)
+                        _parts.Add(new Tuple<bool, string>(false, part));
+                    else
+                        _parts.Add(new Tuple<bool, string>(true, part));
+                }
             }
         }
     }
