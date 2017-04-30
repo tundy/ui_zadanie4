@@ -36,7 +36,7 @@
             <GridSplitter Grid.Column="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
             <DockPanel Grid.Column="2" Margin="5">
                 <TextBlock Text="Báza pravidiel:" DockPanel.Dock="Top"/>
-                <TextBox AcceptsReturn="True" TextWrapping="NoWrap" x:Name="Rules" x:FieldModifier="private" IsReadOnly="False" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" DockPanel.Dock="Bottom"/>
+                <TextBox AcceptsReturn="True" AcceptsTab="True" TextWrapping="NoWrap" x:Name="Rules" x:FieldModifier="private" IsReadOnly="False" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" DockPanel.Dock="Bottom"/>
             </DockPanel>
         </Grid>
         <GridSplitter Grid.Row="2" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
