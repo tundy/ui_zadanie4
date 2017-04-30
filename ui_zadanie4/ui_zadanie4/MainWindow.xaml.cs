@@ -82,20 +82,31 @@ POTOM ((vymaz zena ?X))");
             if (!CheckMemory()) return;
             if (!ParseRules()) return;
 
-            var work = true;
-            while (work)
+            // Nastala zmena tuto iteraciu?
+            var change = true;
+            // Posledne pouzite pravidlo v predchadzajucej iteracii
+            var lastUsed = _rules.Count;
+            while (change)
             {
-                work = false;
-                foreach (var rule in _rules)
+                change = false;
+                for (var i = 0; i < _rules.Count; i++)
                 {
+                    if (!change && i >= lastUsed) continue;
+                    var rule = _rules[i];
                     foreach (var @params in rule.Check(Memory.Text))
                     {
-                        DebugOutput.AppendText($@"{rule.Name}: ");
+                        DebugOutput.AppendText($@"Pravidlo '{rule.Name}': ");
                         foreach (var param in @params)
                             DebugOutput.AppendText($@"[{param.Key}]{param.Value} ");
                         DebugOutput.AppendText(Environment.NewLine);
                         foreach (var action in rule.Actions)
-                            work |= action.DoWork(@params);
+                        {
+                            if (action.DoWork(@params))
+                            {
+                                change = true;
+                                lastUsed = i;
+                            }
+                        }
                     }
                 }
             }

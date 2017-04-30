@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace ui_zadanie4
 {
-    [DebuggerDisplay("Name")]
+    [DebuggerDisplay("{Name}")]
     internal class Rule
     {
         private class Condition
