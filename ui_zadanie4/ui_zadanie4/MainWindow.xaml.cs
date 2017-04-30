@@ -1,77 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using System.Xaml;
+using System.Xml.Serialization;
+using Microsoft.Win32;
 
 namespace ui_zadanie4
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    ///     Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow
     {
         private readonly List<Rule> _rules = new List<Rule>();
 
         public MainWindow()
         {
             InitializeComponent();
-
-            Memory.AppendText(@"(Peter je rodic Jano)
-(Peter je rodic Vlado)
-(manzelia Peter Eva)
-(Vlado je rodic Maria)
-(Vlado je rodic Viera)
-(muz Peter)
-(muz Jano)
-(muz Vlado)
-(zena Maria)
-(zena Viera)
-(zena Eva)");
-
-            Rules.AppendText(@" DruhyRodic1:
-AK ((?X je rodic ?Y)(manzelia ?X ?Z))
-POTOM ((pridaj ?Z je rodic ?Y))
-
-DruhyRodic2:
-AK ((?X je rodic ?Y)(manzelia ?Z ?X))
-POTOM ((pridaj ?Z je rodic ?Y))
-
-Otec:
-AK ((?X je rodic ?Y)(muz ?X))
-POTOM ((pridaj ?X je otec ?Y))
-
-Matka:
-AK ((?X je rodic ?Y)(zena ?X))
-POTOM ((pridaj ?X je matka ?Y))
-
-Surodenci:
-AK ((?X je rodic ?Y)(?X je rodic ?Z)(<> ?Y ?Z))
-POTOM ((pridaj ?Y a ?Z su surodenci))
-
-Brat:
-AK ((?Y a ?Z su surodenci)(muz ?Y))
-POTOM ((pridaj ?Y je brat ?Z))
-
-Stryko:
-AK ((?Y je brat ?Z)(?Z je rodic ?X))
-POTOM ((pridaj ?Y je stryko ?X)(sprava ?X ma stryka))
-
-Test mazania:
-AK ((?Y je stryko ?X)(zena ?X))
-POTOM ((vymaz zena ?X))");
         }
 
         private void ParseButton_OnClick(object sender, RoutedEventArgs e)
@@ -100,13 +47,11 @@ POTOM ((vymaz zena ?X))");
                             DebugOutput.AppendText($@"[{param.Key}]{param.Value} ");
                         DebugOutput.AppendText(Environment.NewLine);
                         foreach (var action in rule.Actions)
-                        {
                             if (action.DoWork(@params))
                             {
                                 change = true;
                                 lastUsed = i;
                             }
-                        }
                     }
                 }
             }
@@ -125,7 +70,7 @@ POTOM ((vymaz zena ?X))");
         }
 
         /// <summary>
-        /// Remove duplicates and Empty lines from memory Textbox
+        ///     Remove duplicates and Empty lines from memory Textbox
         /// </summary>
         private void CleanUpMemory()
         {
@@ -160,7 +105,8 @@ POTOM ((vymaz zena ?X))");
             temp = temp.Substring(5).TrimStart();
             if (temp[0] != '(')
             {
-                Output.AppendText($"ERROR: Za slovom POTOM sa nenachadza '(' v pravidle '{rule.Name}'.{Environment.NewLine}");
+                Output.AppendText(
+                    $"ERROR: Za slovom POTOM sa nenachadza '(' v pravidle '{rule.Name}'.{Environment.NewLine}");
                 return false;
             }
 
@@ -190,7 +136,8 @@ POTOM ((vymaz zena ?X))");
                         var action = GetAction(actionText);
                         if (action == null)
                         {
-                            Output.AppendText($"ERROR: Neznama akcia:{Environment.NewLine}{actionText}{Environment.NewLine}");
+                            Output.AppendText(
+                                $"ERROR: Neznama akcia:{Environment.NewLine}{actionText}{Environment.NewLine}");
                             return false;
                         }
                         rule.Actions.Add(action);
@@ -199,14 +146,12 @@ POTOM ((vymaz zena ?X))");
                 }
 
                 if (level == 1)
-                {
                     if (!char.IsWhiteSpace(temp[index]))
                     {
                         Output.AppendText(
                             $"ERROR: Chyba v pravidle '{rule.Name}'. Medzi akciami nemoze byt text.{Environment.NewLine}");
                         return false;
                     }
-                }
             }
             temp = temp.Length <= index ? "" : temp.Substring(index).TrimStart();
             return true;
@@ -222,7 +167,8 @@ POTOM ((vymaz zena ?X))");
             temp = temp.Substring(2).TrimStart();
             if (temp[0] != '(')
             {
-                Output.AppendText($"ERROR: Za slovom AK sa nenachadza '(' v pravidle '{rule.Name}'.{Environment.NewLine}");
+                Output.AppendText(
+                    $"ERROR: Za slovom AK sa nenachadza '(' v pravidle '{rule.Name}'.{Environment.NewLine}");
                 return false;
             }
 
@@ -252,14 +198,12 @@ POTOM ((vymaz zena ?X))");
                 }
 
                 if (level == 1)
-                {
                     if (!char.IsWhiteSpace(temp[index]))
                     {
                         Output.AppendText(
                             $"ERROR: Chyba v pravidle '{rule.Name}'. Medzi podmienkami nemoze byt text.{Environment.NewLine}");
                         return false;
                     }
-                }
             }
 
             if (temp.Length <= index)
@@ -296,6 +240,66 @@ POTOM ((vymaz zena ?X))");
             }
             temp = temp.Substring(nameEnd).TrimStart();
             return true;
+        }
+
+        private void LoadButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            var dialog = new OpenFileDialog
+            {
+                Multiselect = false,
+                ReadOnlyChecked = true,
+                ShowReadOnly = false,
+                DefaultExt = "xml"
+            };
+            if (dialog.ShowDialog(this) == true)
+                using (var stream = File.OpenRead(dialog.FileName))
+                {
+                    var serializer = new XmlSerializer(typeof(Save));
+                    try
+                    {
+                        var save = serializer.Deserialize(stream) as Save;
+                        if (save == null) return;
+                        Memory.Text = save.Fakty;
+                        Rules.Text = save.Pravidla;
+                        Output.Text = save.Vystup;
+                        DebugOutput.Text = "Uspesne Nacitanie suboru: " + dialog.FileName;
+                    }
+                    catch (Exception ex)
+                    {
+                        DebugOutput.AppendText(ex + Environment.NewLine);
+                    }
+                }
+        }
+
+        private void SaveButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            var save = new Save
+            {
+                Fakty = Memory.Text,
+                Pravidla = Rules.Text,
+                Vystup = Output.Text
+            };
+
+            var dialog = new SaveFileDialog
+            {
+                OverwritePrompt = true,
+                CreatePrompt = false,
+                AddExtension = true,
+                DefaultExt = "xml"
+            };
+            if (dialog.ShowDialog(this) == true)
+                using (var stream = File.Create(dialog.FileName))
+                {
+                    try
+                    {
+                        var serializer = new XmlSerializer(typeof(Save));
+                        serializer.Serialize(stream, save);
+                    }
+                    catch (Exception ex)
+                    {
+                        DebugOutput.AppendText(ex + Environment.NewLine);
+                    }
+                }
         }
     }
 }

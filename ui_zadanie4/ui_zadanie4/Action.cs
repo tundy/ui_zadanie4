@@ -2,15 +2,14 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Windows;
 
 namespace ui_zadanie4
 {
-    public partial class MainWindow : Window
+    public partial class MainWindow
     {
-        private MainWindow.Action GetAction(string text)
+        private Action GetAction(string text)
         {
-            var parts = text.Split(new[] { ' ' }, 2, StringSplitOptions.RemoveEmptyEntries);
+            var parts = text.Trim().Split(new[] {' '}, 2);
             switch (parts[0].ToUpper())
             {
                 case "PRIDAJ":
@@ -26,22 +25,8 @@ namespace ui_zadanie4
 
         internal abstract class Action
         {
-            public abstract bool DoWork(Dictionary<string, string> parameters);
-            protected readonly MainWindow Window;
             private readonly List<Tuple<bool, string>> _parts = new List<Tuple<bool, string>>(4);
-
-            protected string ToString(Dictionary<string, string> Params, bool regex)
-            {
-                var sb = new StringBuilder();
-                sb.Append(regex ? "^\\s*\\(" : "(");
-                foreach (var part in _parts)
-                    if (part.Item1 && Params.ContainsKey(part.Item2))
-                        sb.Append(regex ? $"({Params[part.Item2]})" : Params[part.Item2]);
-                    else
-                        sb.Append(part.Item2);
-                sb.Append(regex ? "\\)\\s*$" : ")");
-                return sb.ToString();
-            }
+            protected readonly MainWindow Window;
 
             protected Action(string input, MainWindow window)
             {
@@ -56,6 +41,21 @@ namespace ui_zadanie4
                     else
                         _parts.Add(new Tuple<bool, string>(true, part));
                 }
+            }
+
+            public abstract bool DoWork(Dictionary<string, string> parameters);
+
+            protected string ToString(Dictionary<string, string> Params, bool regex)
+            {
+                var sb = new StringBuilder();
+                sb.Append(regex ? "^\\s*\\(" : "(");
+                foreach (var part in _parts)
+                    if (part.Item1 && Params.ContainsKey(part.Item2))
+                        sb.Append(regex ? $"({Params[part.Item2]})" : Params[part.Item2]);
+                    else
+                        sb.Append(part.Item2);
+                sb.Append(regex ? "\\)\\s*$" : ")");
+                return sb.ToString();
             }
         }
     }

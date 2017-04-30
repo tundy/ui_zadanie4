@@ -5,7 +5,7 @@ using System.Windows;
 
 namespace ui_zadanie4
 {
-    public partial class MainWindow : Window
+    public partial class MainWindow
     {
         private class Vymaz : Action
         {
@@ -20,14 +20,14 @@ namespace ui_zadanie4
                 var match = regex.Match(Window.Memory.Text);
                 if (match.Success)
                 {
-                    Window.DebugOutput.AppendText($"Nenasiel som fakt '{output}' na vymadzanie.{Environment.NewLine}");
+                    Window.DebugOutput.AppendText($"Vymazavam: {output}{Environment.NewLine}");
                     var part = Window.Memory.Text.Remove(match.Index);
                     if (match.Index + match.Length < Window.Memory.Text.Length)
                         part += Window.Memory.Text.Substring(match.Index + match.Length);
                     Window.Memory.Text = part;
                     return false;
                 }
-                Window.DebugOutput.AppendText($"Vymazavam: {output}{Environment.NewLine}");
+                Window.DebugOutput.AppendText($"Nenasiel som fakt '{output}' na vymadzanie.{Environment.NewLine}");
                 return false;
             }
         }

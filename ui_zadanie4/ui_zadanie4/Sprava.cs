@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Windows;
+﻿using System.Collections.Generic;
 
 namespace ui_zadanie4
 {
-    public partial class MainWindow : Window
+    public partial class MainWindow
     {
         private class Sprava : Action
         {

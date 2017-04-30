@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using System.Windows;
 
 namespace ui_zadanie4
 {
-    public partial class MainWindow : Window
+    public partial class MainWindow
     {
         private class Pridaj : Action
         {

@@ -8,31 +8,44 @@
         Title="MainWindow" Width="800" Height="600">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="7*"/>
-            <RowDefinition Height="3*"/>
             <RowDefinition Height="auto"/>
+            <RowDefinition Height="7*"/>
+            <RowDefinition Height="5"/>
+            <RowDefinition Height="3*"/>
+            <RowDefinition Height="5"/>
             <RowDefinition Height="2*"/>
         </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="1*"/>
-            <ColumnDefinition Width="2*"/>
-        </Grid.ColumnDefinitions>
-        <DockPanel Grid.Column="0" Grid.Row="0" Margin="5">
-            <TextBlock Text="Pracovná pamäť:" DockPanel.Dock="Top"/>
-            <TextBox AcceptsReturn="True" TextWrapping="NoWrap" x:Name="Memory" x:FieldModifier="private" IsReadOnly="False" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" DockPanel.Dock="Bottom"/>
-        </DockPanel>
-        <DockPanel Grid.Column="1" Grid.Row="0" Margin="5">
-            <TextBlock Text="Báza pravidiel:" DockPanel.Dock="Top"/>
-            <TextBox AcceptsReturn="True" TextWrapping="NoWrap" x:Name="Rules" x:FieldModifier="private" IsReadOnly="False" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" DockPanel.Dock="Bottom"/>
-        </DockPanel>
-        <DockPanel Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" Margin="5">
+        <WrapPanel Grid.Row="0">
+            <Button Margin="5" Content="Rodinné vzťahy" Click="FamilyButton_OnClick"/>
+            <Button Margin="5" Content="Fiaty1" Click="FiatsButton_OnClick"/>
+            <Button Margin="5" Content="Fiaty2" Click="Fiats2Button_OnClick"/>
+            <Button Margin="5" Content="Načítať" Click="LoadButton_OnClick"/>
+            <Button Margin="5" Content="Uložiť" Click="SaveButton_OnClick"/>
+            <Button Margin="5" Content="Spracuj" Click="ParseButton_OnClick"/>
+        </WrapPanel>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="5"/>
+                <ColumnDefinition Width="2*"/>
+            </Grid.ColumnDefinitions>
+            <DockPanel Grid.Column="0" Margin="5">
+                <TextBlock Text="Pracovná pamäť:" DockPanel.Dock="Top"/>
+                <TextBox AcceptsReturn="True" AcceptsTab="True" TextWrapping="NoWrap" x:Name="Memory" x:FieldModifier="private" IsReadOnly="False" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" DockPanel.Dock="Bottom"/>
+            </DockPanel>
+            <GridSplitter Grid.Column="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
+            <DockPanel Grid.Column="2" Margin="5">
+                <TextBlock Text="Báza pravidiel:" DockPanel.Dock="Top"/>
+                <TextBox AcceptsReturn="True" TextWrapping="NoWrap" x:Name="Rules" x:FieldModifier="private" IsReadOnly="False" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" DockPanel.Dock="Bottom"/>
+            </DockPanel>
+        </Grid>
+        <GridSplitter Grid.Row="2" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
+        <DockPanel Grid.Row="3" Margin="5">
             <TextBlock Text="Pomocný výstup:" DockPanel.Dock="Top"/>
             <TextBox TextWrapping="Wrap" x:Name="DebugOutput" x:FieldModifier="private" IsReadOnly="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" DockPanel.Dock="Bottom"/>
         </DockPanel>
-        <WrapPanel Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2">
-            <Button Margin="5" Content="Parse" Click="ParseButton_OnClick"/>
-        </WrapPanel>
-        <DockPanel Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="2" Margin="5">
+        <GridSplitter Grid.Row="4" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
+        <DockPanel Grid.Row="5" Margin="5">
             <TextBlock Text="Výstup správ:" DockPanel.Dock="Top"/>
             <TextBox TextWrapping="Wrap" x:Name="Output" x:FieldModifier="private" IsReadOnly="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" DockPanel.Dock="Bottom"/>
         </DockPanel>
