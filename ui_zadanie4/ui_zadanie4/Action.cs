@@ -43,17 +43,17 @@ namespace ui_zadanie4
                 }
             }
 
-            public abstract bool DoWork(Dictionary<string, string> parameters);
+            public abstract bool DoWork(IReadOnlyDictionary<string, string> parameters);
 
-            protected string ToString(Dictionary<string, string> Params, bool regex)
+            protected string ToString(IReadOnlyDictionary<string, string> Params, bool regex)
             {
                 var sb = new StringBuilder();
                 sb.Append(regex ? "^\\s*\\(" : "(");
                 foreach (var part in _parts)
                     if (part.Item1 && Params.ContainsKey(part.Item2))
-                        sb.Append(regex ? $"({Params[part.Item2]})" : Params[part.Item2]);
+                        sb.Append(regex ? $"({Regex.Escape(Params[part.Item2])})" : Params[part.Item2]);
                     else
-                        sb.Append(part.Item2);
+                        sb.Append(regex ? Regex.Escape(part.Item2) : part.Item2);
                 sb.Append(regex ? "\\)\\s*$" : ")");
                 return sb.ToString();
             }

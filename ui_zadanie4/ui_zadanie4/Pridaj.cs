@@ -12,7 +12,7 @@ namespace ui_zadanie4
             {
             }
 
-            public override bool DoWork(Dictionary<string, string> parameters)
+            public override bool DoWork(IReadOnlyDictionary<string, string> parameters)
             {
                 var regex = new Regex(ToString(parameters, true), RegexOptions.Multiline);
                 var output = ToString(parameters, false);

@@ -47,50 +47,74 @@ namespace ui_zadanie4
             }
             else
             {
-                var wrong = false;
                 var reg = new Regex(condition.ToString(@params), RegexOptions.Multiline);
                 var matches = reg.Matches(memory);
                 for (var i = 0; i < matches.Count; i++)
-                {
-                    var match = matches[i];
-                    for (var j = 1; j < match.Groups.Count; j++)
-                    {
-                        var group = match.Groups[j].Value;
-                        var param = condition.ParamsOrder[j - 1];
-                        if (!@params.ContainsKey(param))
-                        {
-                            @params.Add(param, group);
-                        }
-                        else
-                        {
-                            if (!group.Equals(@params[param]))
-                            {
-                                wrong = true;
-                                break;
-                            }
-                        }
-                    }
-                    if (wrong) continue;
-
-                    //Console.WriteLine($@"{Name}: {condition.ToString(@params)}");
-                    foreach (var temp in CheckCondition(index + 1, @params, memory))
-                        yield return new Dictionary<string, string>(temp);
-
-                    foreach (var param in condition.ParamsOrder)
-                        @params.Remove(param);
-                }
+                    foreach (var p in CheckFacts(index, @params, memory, matches, i, condition))
+                        yield return p;
             }
         }
 
+        /// <summary>
+        /// Spracuj najdeny fakt
+        /// </summary>
+        /// <param name="index"></param>
+        /// <param name="params"></param>
+        /// <param name="memory"></param>
+        /// <param name="matches"></param>
+        /// <param name="i"></param>
+        /// <param name="condition"></param>
+        /// <returns></returns>
+        private IEnumerable<Dictionary<string, string>> CheckFacts(int index, Dictionary<string, string> @params,
+            string memory, MatchCollection matches, int i,
+            Condition condition)
+        {
+            var match = matches[i];
+            for (var j = 1; j < match.Groups.Count; j++)
+            {
+                var group = match.Groups[j].Value;
+                var param = condition.ParamsOrder[j - 1];
+                if (!@params.ContainsKey(param))
+                    @params.Add(param, group);
+                else if (!group.Equals(@params[param]))
+                    yield break;
+            }
+
+            foreach (var temp in CheckCondition(index + 1, @params, memory))
+                yield return new Dictionary<string, string>(temp);
+
+            foreach (var param in condition.ParamsOrder)
+                @params.Remove(param);
+        }
+
+        /// <summary>
+        ///     Spusti overovanie vsetkych podmienok pravidla
+        /// </summary>
+        /// <param name="memory">Fakty na, ktorych kontroluj pravidla</param>
+        /// <returns>Najdene premenne, kt. splnili pravidlo</returns>
         public IEnumerable<Dictionary<string, string>> Check(string memory) => CheckCondition(0, null, memory);
 
         private class Condition
         {
-            private const string NoValue = "(.*)";
-            private readonly List<Tuple<bool, string>> _parts = new List<Tuple<bool, string>>(4);
+            /// <summary>
+            ///     Konstantne casti textu
+            /// </summary>
+            private readonly List<Tuple<bool, string>> _parts;
+
+            /// <summary>
+            ///     Jedna sa o pravidlo porovnavania?
+            /// </summary>
             internal readonly bool Compare;
+
+            /// <summary>
+            ///     Premenne pravidla
+            /// </summary>
             internal readonly List<string> ParamsOrder = new List<string>(2);
 
+            /// <summary>
+            ///     Analyzuje string a vytvori k nemu prislichajuce pravidlo
+            /// </summary>
+            /// <param name="input">Napisane pravidlo</param>
             public Condition(string input)
             {
                 var regex = new Regex("^\\s*\\<\\>\\s*(\\?[^\\s]+)\\s+(\\?[^\\s]+)\\s*$");
@@ -98,19 +122,13 @@ namespace ui_zadanie4
                 if (match.Success)
                 {
                     Compare = true;
-                    _parts.Add(new Tuple<bool, string>(false, "<> "));
-                    var value = match.Groups[1].Value;
-                    ParamsOrder.Add(value);
-                    //Params.Add(value, NoValue);
-                    _parts.Add(new Tuple<bool, string>(true, value));
-                    _parts.Add(new Tuple<bool, string>(false, " "));
-                    value = match.Groups[2].Value;
-                    ParamsOrder.Add(value);
-                    _parts.Add(new Tuple<bool, string>(true, value));
+                    ParamsOrder.Add(match.Groups[1].Value);
+                    ParamsOrder.Add(match.Groups[2].Value);
                 }
                 else
                 {
                     Compare = false;
+                    _parts = new List<Tuple<bool, string>>(4);
                     regex = new Regex("(\\?[^\\s]+)|([^\\?]+|\\?[^\\s]{0})");
                     var matches = regex.Matches(input);
                     foreach (Match m in matches)
@@ -118,7 +136,7 @@ namespace ui_zadanie4
                         var part = m.Value;
                         if (part[0] != '?' || part.Length == 1)
                         {
-                            _parts.Add(new Tuple<bool, string>(false, part));
+                            _parts.Add(new Tuple<bool, string>(false, Regex.Escape(part)));
                         }
                         else
                         {
@@ -129,13 +147,19 @@ namespace ui_zadanie4
                 }
             }
 
-            public string ToString(Dictionary<string, string> Params)
+            /// <summary>
+            ///     Vytvor regex vzor pre hladanie faktov splnajuce tot pravidlo
+            /// </summary>
+            /// <param name="Params">Najdene hodnoty z faktov pouzitim predchadzajucich pravidiel</param>
+            /// <returns>Regex vzor pre hladanie faktov</returns>
+            public string ToString(IReadOnlyDictionary<string, string> Params)
             {
+                if (Compare) return null;
                 var sb = new StringBuilder();
                 sb.Append("^\\s*\\(");
                 foreach (var part in _parts)
                     if (part.Item1)
-                        sb.Append(Params.ContainsKey(part.Item2) ? $"({Params[part.Item2]})" : NoValue);
+                        sb.Append(Params.ContainsKey(part.Item2) ? $"({Regex.Escape(Params[part.Item2])})" : "(.*)");
                     else
                         sb.Append(part.Item2);
                 sb.Append("\\)\\s*$");

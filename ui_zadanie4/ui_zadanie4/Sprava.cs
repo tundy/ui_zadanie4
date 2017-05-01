@@ -10,7 +10,7 @@ namespace ui_zadanie4
             {
             }
 
-            public override bool DoWork(Dictionary<string, string> parameters)
+            public override bool DoWork(IReadOnlyDictionary<string, string> parameters)
             {
                 var temp = ToString(parameters, false);
                 Window.Output.AppendText($"{temp.Substring(1, temp.Length-2)}\n");

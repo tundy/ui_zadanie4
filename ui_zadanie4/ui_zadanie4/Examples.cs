@@ -59,14 +59,14 @@ AK ((start)(typ karoserie ?sedan-hatchback))
 POTOM ((pridaj karoseria ?sedan-hatchback)(vymaz start))
 
 help: AK((start)) POTOM (
-     (sprava typ karoserie ?sedan-hatchback)
-     (sprava predna maska ?ano-nie-mriezka)
-     (sprava ma ?okruhle-integrovane svetla)
-     (sprava pohanana naprava ?predna-zadna)
-     (sprava ak sedan:)
-          (sprava      pocet dveri ?4-5)
-     (sprava ak hatchback:)
-          (sprava      pocet dveri ?3-5)
+	(sprava (typ karoserie ?sedan-hatchback))
+	(sprava (predna maska ?ano-nie-mriezka))
+	(sprava (ma ?okruhle-integrovane svetla))
+	(sprava (pohanana naprava ?predna-zadna))
+	(sprava ak sedan:)
+		(sprava 	(pocet dveri ?4-5))
+	(sprava ak hatchback:)
+		(sprava 	(pocet dveri ?3-5))
 )
 
 p2:

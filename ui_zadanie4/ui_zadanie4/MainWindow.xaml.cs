@@ -59,7 +59,8 @@ namespace ui_zadanie4
 
         private bool CheckMemory()
         {
-            var regex = new Regex("^\\s*(([^\\(\\s].*)|(.*[^\\)\\s]))\\s*$", RegexOptions.Multiline);
+            var regex = new Regex("^\\s*(([^\\(\\s].*)|(.*[^\\)\\s])|(.*\\).*\\(.*)|(.*\\).*\\).*)|(.*\\(.*\\(.*))\\s*$", RegexOptions.Multiline);
+            //var regex = new Regex("([^)\\s]+\\s*$)|(^\\s*[^(\\s]+)|(\\)[^\\(]*[^\\(\\s]+[^\\(]*\\()|(\\)[^\\(]*\\))|(\\([^\\)]*\\()", RegexOptions.Multiline);
             var match = regex.Match(Memory.Text);
             if (match.Success)
             {
@@ -119,11 +120,14 @@ namespace ui_zadanie4
                     ++level;
                     if (level > 2)
                     {
-                        Output.AppendText(
+                        /*Output.AppendText(
                             $"ERROR: V akcii pre pravidlo '{rule.Name}' je trojite vnorenie zatvoriek.{Environment.NewLine}");
-                        return false;
+                        return false;*/
                     }
-                    start = index + 1;
+                    else
+                    {
+                        start = index + 1;
+                    }
                     continue;
                 }
 
@@ -181,11 +185,14 @@ namespace ui_zadanie4
                     ++level;
                     if (level > 2)
                     {
-                        Output.AppendText(
+                        /*Output.AppendText(
                             $"ERROR: V podmienke pre pravidlo '{rule.Name}' je trojite vnorenie zatvoriek.{Environment.NewLine}");
-                        return false;
+                        return false;*/
                     }
-                    start = index + 1;
+                    else
+                    {
+                        start = index + 1;
+                    }
                     continue;
                 }
 
