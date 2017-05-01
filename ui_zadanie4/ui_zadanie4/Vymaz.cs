@@ -20,10 +20,10 @@ namespace ui_zadanie4
                 if (match.Success)
                 {
                     Window.DebugOutput.AppendText($"Vymazavam: {output}{Environment.NewLine}");
-                    var part = Window.Memory.Text.Remove(match.Index);
+                    var part = Window.Memory.Text.Remove(match.Index).TrimEnd();
                     if (match.Index + match.Length < Window.Memory.Text.Length)
-                        part += Window.Memory.Text.Substring(match.Index + match.Length);
-                    Window.Memory.Text = part;
+                        part += Environment.NewLine + Window.Memory.Text.Substring(match.Index + match.Length).TrimStart();
+                    Window.Memory.Text = part.Trim();
                     return false;
                 }
                 Window.DebugOutput.AppendText($"Nenasiel som fakt '{output}' na vymadzanie.{Environment.NewLine}");

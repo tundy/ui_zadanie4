@@ -204,13 +204,21 @@ namespace ui_zadanie4
             {
                 if (Compare) return null;
                 var sb = new StringBuilder();
+#if ZatvorkyPreFakty
                 sb.Append("^\\s*\\(");
+#else
+                sb.Append("^");
+#endif
                 foreach (var part in _parts)
                     if (part.Item1)
                         sb.Append(Params.ContainsKey(part.Item2) ? $"({Regex.Escape(Params[part.Item2])})" : "(.*)");
                     else
                         sb.Append(part.Item2);
+#if ZatvorkyPreFakty
                 sb.Append("\\)\\s*$");
+#else
+                sb.Append("$");
+#endif
                 return sb.ToString();
             }
         }

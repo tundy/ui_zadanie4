@@ -2,11 +2,12 @@
 
 namespace ui_zadanie4
 {
-    public partial class MainWindow
-    {
-        private void FamilyButton_OnClick(object sender, RoutedEventArgs e)
-        {
-            Memory.Text = @"(Peter je rodic Jano)
+	public partial class MainWindow
+	{
+		private void FamilyButton_OnClick(object sender, RoutedEventArgs e)
+		{
+#if ZatvorkyPreFakty
+			Memory.Text = @"(Peter je rodic Jano)
 (Peter je rodic Vlado)
 (manzelia Peter Eva)
 (Vlado je rodic Maria)
@@ -17,8 +18,21 @@ namespace ui_zadanie4
 (zena Maria)
 (zena Viera)
 (zena Eva)";
+#else
+			Memory.Text = @"Peter je rodic Jano
+Peter je rodic Vlado
+manzelia Peter Eva
+Vlado je rodic Maria
+Vlado je rodic Viera
+muz Peter
+muz Jano
+muz Vlado
+zena Maria
+zena Viera
+zena Eva";
+#endif
 
-            Rules.Text = @"DruhyRodic1:
+			Rules.Text = @"DruhyRodic1:
 AK ((?X je rodic ?Y)(manzelia ?X ?Z))
 POTOM ((pridaj ?Z je rodic ?Y))
 
@@ -49,15 +63,21 @@ POTOM ((pridaj ?Y je stryko ?X)(sprava ?X ma stryka))
 Test mazania:
 AK ((?Y je stryko ?X)(zena ?X))
 POTOM ((vymaz zena ?X))";
-        }
+		}
 
-        private void Fiats2Button_OnClick(object sender, RoutedEventArgs e)
-        {
-            Memory.Text = "(start)";
-            Rules.Text = @"p1:
+		private void Fiats2Button_OnClick(object sender, RoutedEventArgs e)
+		{
+#if ZatvorkyPreFakty
+			Memory.Text = "(start)";
+#else
+			Memory.Text = "start";
+#endif
+			Rules.Text = @"p1:
 AK ((start)(typ karoserie ?sedan-hatchback))
-POTOM ((pridaj karoseria ?sedan-hatchback)(vymaz start))
+POTOM ((pridaj karoseria ?sedan-hatchback)(vymaz start))";
 
+#if ZatvorkyPreFakty
+			Rules.Text += @"
 help: AK((start)) POTOM (
 	(sprava (typ karoserie ?sedan-hatchback))
 	(sprava (predna maska ?ano-nie-mriezka))
@@ -68,7 +88,23 @@ help: AK((start)) POTOM (
 	(sprava ak hatchback:)
 		(sprava 	(pocet dveri ?3-5))
 )
+";
+#else
+			Rules.Text += @"
+help: AK((start)) POTOM (
+	(sprava typ karoserie ?sedan-hatchback)
+	(sprava predna maska ?ano-nie-mriezka)
+	(sprava ma ?okruhle-integrovane svetla)
+	(sprava pohanana naprava ?predna-zadna)
+	(sprava (ak sedan))
+		(sprava pocet dveri ?4-5)
+	(sprava (ak hatchback))
+		(sprava pocet dveri ?3-5)
+)
+";
+#endif
 
+			Rules.Text += @"
 p2:
 AK ((karoseria sedan)(pocet dveri ?4-5))
 POTOM ((pridaj sedan ?4-5))
@@ -88,7 +124,7 @@ POTOM ((pridaj vybrany Fiat Tempra)(sprava Fiat Tempra))
 p6:
 AK ((naprava zadna))
 POTOM ((pridaj vybrany Fiat Mirafiorri)
-       (sprava Fiat Mirafiorri))
+	   (sprava Fiat Mirafiorri))
 
 p7:
 AK ((karoseria hatchback)(pocet dveri ?3alebo5))
@@ -133,17 +169,25 @@ POTOM ((pridaj vybrany Fiat Uno5)(sprava Fiat Uno5))
 p17:
 AK ((okruhle svetla))
 POTOM ((pridaj vybrany Fiat Ritmo5)(sprava Fiat Ritmo5))";
-        }
+		}
 
-        private void FiatsButton_OnClick(object sender, RoutedEventArgs e)
-        {
-            Memory.Text = @"(typ karoserie sedan)
+		private void FiatsButton_OnClick(object sender, RoutedEventArgs e)
+		{
+#if ZatvorkyPreFakty
+			Memory.Text = @"(typ karoserie sedan)
 (pocet dveri 4)
 (pohanana naprava predna)
 (predna maska mriezka)
 (ma okruhle svetla)";
+#else
+			Memory.Text = @"typ karoserie sedan
+pocet dveri 4
+pohanana naprava predna
+predna maska mriezka
+ma okruhle svetla";
+#endif
 
-            Rules.Text = @"FIAT1:
+			Rules.Text = @"FIAT1:
 AK    ((typ karoserie ?sedan_hatchback))
 POTOM ((pridaj karoseria ?sedan_hatchback))
 
@@ -210,6 +254,6 @@ POTOM ((pridaj vybrany Fiat Uno5)(sprava Fiat Uno5))
 FIAT17:
 AK    ((okruhle svetla))
 POTOM ((pridaj vybrany Fiat Ritmo5)(sprava Fiat Ritmo5))";
-        }
-    }
+		}
+	}
 }

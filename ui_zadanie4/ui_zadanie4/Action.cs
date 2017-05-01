@@ -72,13 +72,24 @@ namespace ui_zadanie4
             protected string ToString(IReadOnlyDictionary<string, string> Params, bool regex)
             {
                 var sb = new StringBuilder();
+#if ZatvorkyPreFakty
                 sb.Append(regex ? "^\\s*\\(" : "(");
+#else
+                if(regex)
+                    sb.Append("^");
+#endif
                 foreach (var part in _parts)
                     if (part.Item1 && Params.ContainsKey(part.Item2))
                         sb.Append(regex ? $"({Regex.Escape(Params[part.Item2])})" : Params[part.Item2]);
                     else
                         sb.Append(regex ? Regex.Escape(part.Item2) : part.Item2);
+
+#if ZatvorkyPreFakty
                 sb.Append(regex ? "\\)\\s*$" : ")");
+#else
+                if(regex)
+                    sb.Append("$");
+#endif
                 return sb.ToString();
             }
         }

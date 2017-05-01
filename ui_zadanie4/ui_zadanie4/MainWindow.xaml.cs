@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Windows;
 using System.Xml.Serialization;
 using Microsoft.Win32;
+#if ZatvorkyPreFakty
+using System.Text.RegularExpressions;
+#endif
 
 namespace ui_zadanie4
 {
@@ -26,7 +28,9 @@ namespace ui_zadanie4
             Output.Clear();
             DebugOutput.Clear();
             CleanUpMemory();
+#if ZatvorkyPreFakty
             if (!CheckMemory()) return;
+#endif
             if (!ParseRules()) return;
 
             // Nastala zmena tuto iteraciu?
@@ -57,9 +61,11 @@ namespace ui_zadanie4
             }
         }
 
+#if ZatvorkyPreFakty
         private bool CheckMemory()
         {
-            var regex = new Regex("^\\s*(([^\\(\\s].*)|(.*[^\\)\\s])|(.*\\).*\\(.*)|(.*\\).*\\).*)|(.*\\(.*\\(.*))\\s*$", RegexOptions.Multiline);
+            var regex = new Regex("^\\s*(([^\\(\\s].*)|(.*[^\\)\\s]))\\s*$", RegexOptions.Multiline);
+            //var regex = new Regex("^\\s*(([^\\(\\s].*)|(.*[^\\)\\s])|(.*\\).*\\(.*)|(.*\\).*\\).*)|(.*\\(.*\\(.*))\\s*$", RegexOptions.Multiline);
             //var regex = new Regex("([^)\\s]+\\s*$)|(^\\s*[^(\\s]+)|(\\)[^\\(]*[^\\(\\s]+[^\\(]*\\()|(\\)[^\\(]*\\))|(\\([^\\)]*\\()", RegexOptions.Multiline);
             var match = regex.Match(Memory.Text);
             if (match.Success)
@@ -69,6 +75,7 @@ namespace ui_zadanie4
             }
             return true;
         }
+#endif
 
         /// <summary>
         ///     Remove duplicates and Empty lines from memory Textbox
