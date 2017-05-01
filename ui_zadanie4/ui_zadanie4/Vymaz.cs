@@ -14,6 +14,7 @@ namespace ui_zadanie4
 
             public override bool DoWork(IReadOnlyDictionary<string, string> parameters)
             {
+                Presiel = false;
                 var regex = new Regex(ToString(parameters, true), RegexOptions.Multiline);
                 var output = ToString(parameters, false);
                 var match = regex.Match(Window.Memory.Text);
@@ -28,7 +29,6 @@ namespace ui_zadanie4
                     return false;
                 }
                 Window.DebugOutput.AppendText($"Nenasiel som fakt '{output}' na vymadzanie.{Environment.NewLine}");
-                Presiel = false;
                 return false;
             }
         }

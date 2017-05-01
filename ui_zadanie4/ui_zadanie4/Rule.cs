@@ -50,7 +50,7 @@ namespace ui_zadanie4
 
             // Spracuj podmienku
             var condition = _conditions[index];
-            return condition.Compare
+            return condition.Compare.HasValue
                 ? Compare(index, @params, memory, condition)
                 : FindFacts(index, @params, memory, condition);
         }
@@ -72,7 +72,7 @@ namespace ui_zadanie4
             {
                 // Snazim sa porovnat premenne, kt. ani neexistuju (neboli naplnene) ?
                 if (!@params.ContainsKey(condition.ParamsOrder[1]))
-                    yield break;
+                    return new List<Dictionary<string, string>>(0);
 
                 a = condition.ParamsOrder[0];
                 b = @params[condition.ParamsOrder[1]];
@@ -81,21 +81,15 @@ namespace ui_zadanie4
             {
                 a = @params[condition.ParamsOrder[0]];
                 // Ak druhy parameter je konstanta
-                b = !@params.ContainsKey(condition.ParamsOrder[1]) ? condition.ParamsOrder[1] : @params[condition.ParamsOrder[1]];
+                b = !@params.ContainsKey(condition.ParamsOrder[1])
+                    ? condition.ParamsOrder[1]
+                    : @params[condition.ParamsOrder[1]];
             }
 
-            // Ak su hodnoty rovnake skonci (musia byt rozdielne)
-            if (a.Equals(b))
-                yield break;
-
-            // Spracuj dalsiu podmienku pravidla
-            foreach (var values in CheckCondition(index + 1, @params, memory))
-                yield return values;
-
-            // Zmaz naplnene hodnoty danou podmienkou pre overenim dalsieho faktu
-            foreach (var param in condition.ParamsOrder)
-                if(param[0] == '?')
-                    @params.Remove(param);
+            // ReSharper disable once PossibleInvalidOperationException
+            return condition.Compare.Value == a.Equals(b)
+                ? CheckCondition(index + 1, @params, memory)
+                : new List<Dictionary<string, string>>(0);
         }
 
         /// <summary>
@@ -128,16 +122,23 @@ namespace ui_zadanie4
         private IEnumerable<Dictionary<string, string>> CheckFacts(int index, Dictionary<string, string> @params,
             string memory, Match fakt, Condition condition)
         {
+            var @new = new List<string>(3);
+
             // Vyber najdeneho hodnoty
             for (var j = 1; j < fakt.Groups.Count; j++)
             {
                 var group = fakt.Groups[j].Value;
                 var param = condition.ParamsOrder[j - 1];
                 if (!@params.ContainsKey(param))
+                {
                     @params.Add(param, group);
+                    @new.Add(param);
+                }
                 // Ak bola hodnota naplnena predchadzajucov podmienkov musi sa hodnota zhodovat
                 else if (!group.Equals(@params[param]))
+                {
                     yield break;
+                }
             }
 
             // Spracuj dalsiu podmienku pravidla
@@ -145,7 +146,7 @@ namespace ui_zadanie4
                 yield return temp;
 
             // Zmaz naplnene hodnoty danou podmienkou pre overenim dalsieho faktu
-            foreach (var param in condition.ParamsOrder)
+            foreach (var param in @new)
                 @params.Remove(param);
         }
 
@@ -167,7 +168,7 @@ namespace ui_zadanie4
             /// <summary>
             ///     Jedna sa o pravidlo porovnavania?
             /// </summary>
-            internal readonly bool Compare;
+            internal readonly bool? Compare;
 
             /// <summary>
             ///     Premenne pravidla
@@ -181,11 +182,12 @@ namespace ui_zadanie4
             public Condition(string input)
             {
                 //var regex = new Regex("^\\s*\\<\\>\\s*(\\?[^\\s]+)\\s+(\\?[^\\s]+)\\s*$");
-                var regex = new Regex("^\\s*\\<\\>\\s*(((\\?[^\\s]+)\\s+([^\\s]+.*))|(([^\\s]+.*)\\s+(\\?[^\\s]+)))\\s*$");
+                var regex =
+                    new Regex("^\\s*\\<\\>\\s*(((\\?[^\\s]+)\\s+([^\\s]+.*))|(([^\\s]+.*)\\s+(\\?[^\\s]+)))\\s*$");
                 var match = regex.Match(input);
                 if (match.Success)
                 {
-                    Compare = true;
+                    Compare = false;
                     var i = match.Groups.Count - 1;
                     for (; i >= 0; i--)
                         if (match.Groups[i].Value.Length > 0)
@@ -195,21 +197,37 @@ namespace ui_zadanie4
                 }
                 else
                 {
-                    Compare = false;
-                    _parts = new List<Tuple<bool, string>>(4);
-                    regex = new Regex("(\\?[^\\s]+)|([^\\?]+|\\?[^\\s]{0})");
-                    var matches = regex.Matches(input);
-                    foreach (Match m in matches)
+                    regex =
+                        new Regex("^\\s*\\=\\=\\s*(((\\?[^\\s]+)\\s+([^\\s]+.*))|(([^\\s]+.*)\\s+(\\?[^\\s]+)))\\s*$");
+                    match = regex.Match(input);
+                    if (match.Success)
                     {
-                        var part = m.Value;
-                        if (part[0] != '?' || part.Length == 1)
+                        Compare = true;
+                        var i = match.Groups.Count - 1;
+                        for (; i >= 0; i--)
+                            if (match.Groups[i].Value.Length > 0)
+                                break;
+                        ParamsOrder.Add(match.Groups[--i].Value);
+                        ParamsOrder.Add(match.Groups[i + 1].Value);
+                    }
+                    else
+                    {
+                        Compare = null;
+                        _parts = new List<Tuple<bool, string>>(4);
+                        regex = new Regex("(\\?[^\\s]+)|([^\\?]+|\\?[^\\s]{0})");
+                        var matches = regex.Matches(input);
+                        foreach (Match m in matches)
                         {
-                            _parts.Add(new Tuple<bool, string>(false, Regex.Escape(part)));
-                        }
-                        else
-                        {
-                            _parts.Add(new Tuple<bool, string>(true, part));
-                            ParamsOrder.Add(part);
+                            var part = m.Value;
+                            if (part[0] != '?' || part.Length == 1)
+                            {
+                                _parts.Add(new Tuple<bool, string>(false, Regex.Escape(part)));
+                            }
+                            else
+                            {
+                                _parts.Add(new Tuple<bool, string>(true, part));
+                                ParamsOrder.Add(part);
+                            }
                         }
                     }
                 }
@@ -222,7 +240,7 @@ namespace ui_zadanie4
             /// <returns>Regex vzor pre hladanie faktov</returns>
             public string ToString(IReadOnlyDictionary<string, string> Params)
             {
-                if (Compare) return null;
+                if (Compare.HasValue) return null;
                 var sb = new StringBuilder();
 #if ZatvorkyPreFakty
                 sb.Append("^\\s*\\(");

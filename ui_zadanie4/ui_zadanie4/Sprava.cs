@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Windows;
 
 namespace ui_zadanie4
 {
@@ -12,11 +13,16 @@ namespace ui_zadanie4
 
             public override bool DoWork(IReadOnlyDictionary<string, string> parameters)
             {
+                Presiel = false;
                 var output = ToString(parameters, false);
 #if ZatvorkyPreFakty
-                Window.Output.AppendText($"{temp.Substring(1, temp.Length-2)}\n");
+                Window.Output.AppendText(temp.Substring(1, temp.Length-2));
+                if(!Important)
+                    Window.Output.AppendText("\n");
 #else
-                Window.Output.AppendText($"{output}\n");
+                Window.Output.AppendText(output);
+                if(!Important)
+                    Window.Output.AppendText("\n");
 #endif
                 Presiel = true;
                 return false;

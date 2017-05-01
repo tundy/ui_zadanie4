@@ -74,7 +74,8 @@ namespace ui_zadanie4
                             catch (Exception ex)
                             {
                                 DebugOutput.AppendText($"Exception: '{ex}'{Environment.NewLine}");
-                                return;
+                                if (!action.MozemPokracovat)
+                                    break;
                             }
                         }
                     }
@@ -335,6 +336,11 @@ namespace ui_zadanie4
                         DebugOutput.AppendText(ex + Environment.NewLine);
                     }
                 }
+        }
+
+        private void MenuItem_OnClick(object sender, RoutedEventArgs e)
+        {
+            Output.Clear();
         }
     }
 }

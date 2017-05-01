@@ -47,7 +47,13 @@
         <GridSplitter Grid.Row="4" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
         <DockPanel Grid.Row="5" Margin="5">
             <TextBlock Text="Výstup správ:" DockPanel.Dock="Top"/>
-            <TextBox TextWrapping="Wrap" x:Name="Output" x:FieldModifier="private" IsReadOnly="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" DockPanel.Dock="Bottom"/>
+            <TextBox TextWrapping="Wrap" x:Name="Output" x:FieldModifier="private" IsReadOnly="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" DockPanel.Dock="Bottom">
+                <TextBox.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Zmaž" Click="MenuItem_OnClick"/>
+                    </ContextMenu>
+                </TextBox.ContextMenu>
+            </TextBox>
         </DockPanel>
     </Grid>
 </Window>

@@ -46,9 +46,9 @@ namespace ui_zadanie4
             protected readonly List<string> MissingValues = new List<string>(1);
             protected readonly MainWindow Window;
 
-            public bool MozemPokracovat => !_important || Presiel;
+            public bool MozemPokracovat => !Important || Presiel;
 
-            private readonly bool _important;
+            protected readonly bool Important;
             protected bool Presiel;
 
             /// <summary>
@@ -60,7 +60,7 @@ namespace ui_zadanie4
             protected Action(string input, MainWindow window, bool important)
             {
                 Window = window;
-                _important = important;
+                Important = important;
                 var regex = new Regex("(\\?[^\\s]+)|([^\\?]+|\\?[^\\s]{0})");
                 var matches = regex.Matches(input);
                 foreach (Match m in matches)

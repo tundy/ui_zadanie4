@@ -14,12 +14,12 @@ namespace ui_zadanie4
 
             public override bool DoWork(IReadOnlyDictionary<string, string> parameters)
             {
+                Presiel = false;
                 var regex = new Regex(ToString(parameters, true), RegexOptions.Multiline);
                 var output = ToString(parameters, false);
                 if (regex.IsMatch(Window.Memory.Text))
                 {
                     Window.DebugOutput.AppendText($"Fakt '{output}' uz existuje.{Environment.NewLine}");
-                    Presiel = false;
                     return false;
                 }
                 Window.DebugOutput.AppendText($"Pridavam: {output}{Environment.NewLine}");
