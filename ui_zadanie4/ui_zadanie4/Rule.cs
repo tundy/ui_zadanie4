@@ -10,79 +10,126 @@ namespace ui_zadanie4
     [DebuggerDisplay("{Name}")]
     internal class Rule
     {
+        /// <summary>
+        ///     Podmienky pravidla
+        /// </summary>
         private readonly List<Condition> _conditions = new List<Condition>();
+
+        /// <summary>
+        ///     Akcie, ktore sa maju vykonat po splneni pravidla
+        /// </summary>
         public readonly List<MainWindow.Action> Actions = new List<MainWindow.Action>();
 
+        /// <summary>
+        ///     Meno pravidla pre testovacie ucely
+        /// </summary>
         public string Name;
 
+        /// <summary>
+        ///     Pridaj podmienku do pravidla
+        /// </summary>
+        /// <param name="input">Napisana podmienka</param>
         public void AddCondition(string input)
         {
             _conditions.Add(new Condition(input));
         }
 
+        /// <summary>
+        ///     Najdi vsetky fakty splnajuce danu podmienku
+        /// </summary>
+        /// <param name="index">Cislo podmienky na spracovanie</param>
+        /// <param name="params">Doteraz Najdene hodnoty z faktov pouzitim predchadzajucich pravidiel</param>
+        /// <param name="memory">Fakty na, ktorych kontroluj pravidla</param>
+        /// <returns>Najdene premenne, kt. splnili podmienku</returns>
         private IEnumerable<Dictionary<string, string>> CheckCondition(int index, Dictionary<string, string> @params,
             string memory)
         {
+            // Ak je to posledna podmienka vrat vsetky najdene hodnoty
             if (index >= _conditions.Count)
-            {
-                yield return @params;
-                yield break;
-            }
+                return new List<Dictionary<string, string>> {new Dictionary<string, string>(@params)};
 
-            if (@params == null)
-                @params = new Dictionary<string, string>(3);
-
+            // Spracuj podmienku
             var condition = _conditions[index];
-            if (condition.Compare)
-            {
-                if (!@params.ContainsKey(condition.ParamsOrder[0]) || !@params.ContainsKey(condition.ParamsOrder[1]))
-                    yield break;
-                if (@params[condition.ParamsOrder[0]].Equals(@params[condition.ParamsOrder[1]]))
-                    yield break;
-                foreach (var temp in CheckCondition(index + 1, @params, memory))
-                    yield return new Dictionary<string, string>(temp);
-
-                foreach (var param in condition.ParamsOrder)
-                    @params.Remove(param);
-            }
-            else
-            {
-                var reg = new Regex(condition.ToString(@params), RegexOptions.Multiline);
-                var matches = reg.Matches(memory);
-                for (var i = 0; i < matches.Count; i++)
-                    foreach (var p in CheckFacts(index, @params, memory, matches, i, condition))
-                        yield return p;
-            }
+            return condition.Compare
+                ? Compare(index, @params, memory, condition)
+                : FindFacts(index, @params, memory, condition);
         }
 
         /// <summary>
-        /// Spracuj najdeny fakt
+        ///     Spracuj podmienku pre rozdielne hodnoty
         /// </summary>
-        /// <param name="index"></param>
-        /// <param name="params"></param>
-        /// <param name="memory"></param>
-        /// <param name="matches"></param>
-        /// <param name="i"></param>
-        /// <param name="condition"></param>
-        /// <returns></returns>
-        private IEnumerable<Dictionary<string, string>> CheckFacts(int index, Dictionary<string, string> @params,
-            string memory, MatchCollection matches, int i,
-            Condition condition)
+        /// <param name="index">Cislo spracovanej podmienky</param>
+        /// <param name="params">Doteraz Najdene hodnoty z faktov pouzitim predchadzajucich pravidiel</param>
+        /// <param name="memory">Fakty na, ktorych kontroluj pravidla</param>
+        /// <param name="condition">Podmienka, kt. sa overuje</param>
+        /// <returns>Najdene premenne, kt. splnili podmienku</returns>
+        private IEnumerable<Dictionary<string, string>> Compare(int index, Dictionary<string, string> @params,
+            string memory, Condition condition)
         {
-            var match = matches[i];
-            for (var j = 1; j < match.Groups.Count; j++)
+            // Snazim sa porovnat premenne, kt. ani neexistuju (neboli naplnene) ?
+            if (!@params.ContainsKey(condition.ParamsOrder[0]) || !@params.ContainsKey(condition.ParamsOrder[1]))
+                return new List<Dictionary<string, string>>(0);
+            // Ak su hodnoty rovnake skonci (musia byt rozdielne)
+            if (@params[condition.ParamsOrder[0]].Equals(@params[condition.ParamsOrder[1]]))
+                return new List<Dictionary<string, string>>(0);
+
+            // Spracuj dalsiu podmienku pravidla
+            var result = CheckCondition(index + 1, @params, memory);
+
+            // Zmaz naplnene hodnoty danou podmienkou pre overenim dalsieho faktu
+            foreach (var param in condition.ParamsOrder)
+                @params.Remove(param);
+
+            return result;
+        }
+
+        /// <summary>
+        ///     Spracuj podmienku
+        /// </summary>
+        /// <param name="index">Cislo spracovanej podmienky</param>
+        /// <param name="params">Doteraz Najdene hodnoty z faktov pouzitim predchadzajucich pravidiel</param>
+        /// <param name="memory">Fakty na, ktorych kontroluj pravidla</param>
+        /// <param name="condition">Podmienka, kt. sa overuje</param>
+        /// <returns>Najdene premenne, kt. splnili podmienku</returns>
+        private IEnumerable<Dictionary<string, string>> FindFacts(int index, Dictionary<string, string> @params,
+            string memory, Condition condition)
+        {
+            var reg = new Regex(condition.ToString(@params), RegexOptions.Multiline);
+            var matches = reg.Matches(memory);
+            foreach (Match match in matches)
+            foreach (var p in CheckFacts(index, @params, memory, match, condition))
+                yield return p;
+        }
+
+        /// <summary>
+        ///     Spracuj najdeny fakt
+        /// </summary>
+        /// <param name="index">Cislo spracovanej podmienky</param>
+        /// <param name="params">Doteraz Najdene hodnoty z faktov pouzitim predchadzajucich pravidiel</param>
+        /// <param name="memory">Fakty na, ktorych kontroluj pravidla</param>
+        /// <param name="fakt">Najedny fakt</param>
+        /// <param name="condition">Podmienka, kt. sa overuje</param>
+        /// <returns>Najdene premenne, kt. splnili podmienku</returns>
+        private IEnumerable<Dictionary<string, string>> CheckFacts(int index, Dictionary<string, string> @params,
+            string memory, Match fakt, Condition condition)
+        {
+            // Vyber najdeneho hodnoty
+            for (var j = 1; j < fakt.Groups.Count; j++)
             {
-                var group = match.Groups[j].Value;
+                var group = fakt.Groups[j].Value;
                 var param = condition.ParamsOrder[j - 1];
                 if (!@params.ContainsKey(param))
                     @params.Add(param, group);
+                // Ak bola hodnota naplnena predchadzajucov podmienkov musi sa hodnota zhodovat
                 else if (!group.Equals(@params[param]))
                     yield break;
             }
 
+            // Spracuj dalsiu podmienku pravidla
             foreach (var temp in CheckCondition(index + 1, @params, memory))
-                yield return new Dictionary<string, string>(temp);
+                yield return temp;
 
+            // Zmaz naplnene hodnoty danou podmienkou pre overenim dalsieho faktu
             foreach (var param in condition.ParamsOrder)
                 @params.Remove(param);
         }
@@ -92,7 +139,8 @@ namespace ui_zadanie4
         /// </summary>
         /// <param name="memory">Fakty na, ktorych kontroluj pravidla</param>
         /// <returns>Najdene premenne, kt. splnili pravidlo</returns>
-        public IEnumerable<Dictionary<string, string>> Check(string memory) => CheckCondition(0, null, memory);
+        public IEnumerable<Dictionary<string, string>> Check(string memory)
+            => CheckCondition(0, new Dictionary<string, string>(3), memory);
 
         private class Condition
         {

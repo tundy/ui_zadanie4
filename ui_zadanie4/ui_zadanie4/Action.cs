@@ -7,6 +7,11 @@ namespace ui_zadanie4
 {
     public partial class MainWindow
     {
+        /// <summary>
+        /// Analyzuj text a vytvor k nemu prisluchajucu akciu
+        /// </summary>
+        /// <param name="text">Napisana akcia</param>
+        /// <returns>Akcia pre dany vstup</returns>
         private Action GetAction(string text)
         {
             var parts = text.Trim().Split(new[] {' '}, 2);
@@ -25,9 +30,17 @@ namespace ui_zadanie4
 
         internal abstract class Action
         {
+            /// <summary>
+            ///     Konstantne casti textu
+            /// </summary>
             private readonly List<Tuple<bool, string>> _parts = new List<Tuple<bool, string>>(4);
             protected readonly MainWindow Window;
 
+            /// <summary>
+            /// Analyzuj text a rozloz na konstatne casti textu a premenne
+            /// </summary>
+            /// <param name="input">Hodnota akcie</param>
+            /// <param name="window">Okno kde sa prejavia vysledky akcie</param>
             protected Action(string input, MainWindow window)
             {
                 Window = window;
@@ -43,8 +56,19 @@ namespace ui_zadanie4
                 }
             }
 
+            /// <summary>
+            /// Urob akciu na zaklade najdenych hodnot a vrat hodnotu ci sa nieco pridalo medzi fakty
+            /// </summary>
+            /// <param name="parameters">Najdene hodnoty splnajuce pravidlo</param>
+            /// <returns>Pridal sa novy fakt?</returns>
             public abstract bool DoWork(IReadOnlyDictionary<string, string> parameters);
 
+            /// <summary>
+            /// Premen hodnotu na text alebo regex vzor
+            /// </summary>
+            /// <param name="Params">Najdene hodnoty splnajuce pravidlo</param>
+            /// <param name="regex">Ma sa vytvor regex vzor</param>
+            /// <returns>Hodnota akcie</returns>
             protected string ToString(IReadOnlyDictionary<string, string> Params, bool regex)
             {
                 var sb = new StringBuilder();
