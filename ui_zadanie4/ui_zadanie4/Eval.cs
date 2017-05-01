@@ -21,7 +21,7 @@ namespace ui_zadanie4
                 var temp = output.Split(new[] {'='}, 2, StringSplitOptions.RemoveEmptyEntries);
                 if (MissingValues.Count != 1)
                 {
-                    Window.DebugOutput.AppendText($"Chybny zapis pre eval: '{output}'{Environment.NewLine}");
+                    Window.DebugOutput.AppendText($"Chybný zápis pre eval: '{output}'{Environment.NewLine}");
                     Presiel = false;
                     return false;
                 }

@@ -38,8 +38,14 @@ namespace ui_zadanie4
             var change = true;
             // Posledne pouzite pravidlo v predchadzajucej iteracii
             var lastUsed = _rules.Count;
+            var pocitadlo = 0xffff;
             while (change)
             {
+                if (pocitadlo-- == 0)
+                {
+                    DebugOutput.AppendText($"Spracovanie bolo prerušené (Priveľa iterácií).{Environment.NewLine}");
+                    return;
+                }
                 change = false;
                 for (var i = 0; i < _rules.Count; i++)
                 {
