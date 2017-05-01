@@ -38,7 +38,7 @@ namespace ui_zadanie4
             var change = true;
             // Posledne pouzite pravidlo v predchadzajucej iteracii
             var lastUsed = _rules.Count;
-            var pocitadlo = 0xffff;
+            var pocitadlo = 1447;
             while (change)
             {
                 if (pocitadlo-- == 0)
