@@ -6,18 +6,19 @@ namespace ui_zadanie4
     {
         private class Sprava : Action
         {
-            public Sprava(string input, MainWindow window) : base(input, window)
+            public Sprava(string input, MainWindow window, bool important) : base(input, window, important)
             {
             }
 
             public override bool DoWork(IReadOnlyDictionary<string, string> parameters)
             {
-                var temp = ToString(parameters, false);
+                var output = ToString(parameters, false);
 #if ZatvorkyPreFakty
                 Window.Output.AppendText($"{temp.Substring(1, temp.Length-2)}\n");
 #else
-                Window.Output.AppendText($"{temp}\n");
+                Window.Output.AppendText($"{output}\n");
 #endif
+                Presiel = true;
                 return false;
             }
         }

@@ -8,7 +8,7 @@ namespace ui_zadanie4
     {
         private class Vymaz : Action
         {
-            public Vymaz(string input, MainWindow window) : base(input, window)
+            public Vymaz(string input, MainWindow window, bool important) : base(input, window, important)
             {
             }
 
@@ -24,9 +24,11 @@ namespace ui_zadanie4
                     if (match.Index + match.Length < Window.Memory.Text.Length)
                         part += Environment.NewLine + Window.Memory.Text.Substring(match.Index + match.Length).TrimStart();
                     Window.Memory.Text = part.Trim();
+                    Presiel = true;
                     return false;
                 }
                 Window.DebugOutput.AppendText($"Nenasiel som fakt '{output}' na vymadzanie.{Environment.NewLine}");
+                Presiel = false;
                 return false;
             }
         }

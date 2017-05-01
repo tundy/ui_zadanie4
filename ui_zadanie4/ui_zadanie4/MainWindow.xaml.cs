@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows;
 using System.Xml.Serialization;
 using Microsoft.Win32;
+
 #if ZatvorkyPreFakty
 using System.Text.RegularExpressions;
 #endif
@@ -42,7 +43,7 @@ namespace ui_zadanie4
                 change = false;
                 for (var i = 0; i < _rules.Count; i++)
                 {
-                    if (!change && i >= lastUsed) continue;
+                    if (!change && i > lastUsed) break;
                     var rule = _rules[i];
                     foreach (var @params in rule.Check(Memory.Text))
                     {
@@ -51,11 +52,25 @@ namespace ui_zadanie4
                             DebugOutput.AppendText($@"[{param.Key}]{param.Value} ");
                         DebugOutput.AppendText(Environment.NewLine);
                         foreach (var action in rule.Actions)
-                            if (action.DoWork(@params))
+                        {
+                            try
                             {
-                                change = true;
-                                lastUsed = i;
+                                if (action.DoWork(@params))
+                                {
+                                    change = true;
+                                    lastUsed = i;
+                                }
+                                if (action is Eval eval)
+                                    @params.Add(eval.Premenna, eval.Vysledok);
+                                if (!action.MozemPokracovat)
+                                    break;
                             }
+                            catch (Exception ex)
+                            {
+                                DebugOutput.AppendText($"Exception: '{ex}'{Environment.NewLine}");
+                                return;
+                            }
+                        }
                     }
                 }
             }

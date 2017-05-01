@@ -66,21 +66,36 @@ namespace ui_zadanie4
         private IEnumerable<Dictionary<string, string>> Compare(int index, Dictionary<string, string> @params,
             string memory, Condition condition)
         {
-            // Snazim sa porovnat premenne, kt. ani neexistuju (neboli naplnene) ?
-            if (!@params.ContainsKey(condition.ParamsOrder[0]) || !@params.ContainsKey(condition.ParamsOrder[1]))
-                return new List<Dictionary<string, string>>(0);
+            string a, b;
+            // Ak prvy parameter je konstanta
+            if (!@params.ContainsKey(condition.ParamsOrder[0]))
+            {
+                // Snazim sa porovnat premenne, kt. ani neexistuju (neboli naplnene) ?
+                if (!@params.ContainsKey(condition.ParamsOrder[1]))
+                    yield break;
+
+                a = condition.ParamsOrder[0];
+                b = @params[condition.ParamsOrder[1]];
+            }
+            else
+            {
+                a = @params[condition.ParamsOrder[0]];
+                // Ak druhy parameter je konstanta
+                b = !@params.ContainsKey(condition.ParamsOrder[1]) ? condition.ParamsOrder[1] : @params[condition.ParamsOrder[1]];
+            }
+
             // Ak su hodnoty rovnake skonci (musia byt rozdielne)
-            if (@params[condition.ParamsOrder[0]].Equals(@params[condition.ParamsOrder[1]]))
-                return new List<Dictionary<string, string>>(0);
+            if (a.Equals(b))
+                yield break;
 
             // Spracuj dalsiu podmienku pravidla
-            var result = CheckCondition(index + 1, @params, memory);
+            foreach (var values in CheckCondition(index + 1, @params, memory))
+                yield return values;
 
             // Zmaz naplnene hodnoty danou podmienkou pre overenim dalsieho faktu
             foreach (var param in condition.ParamsOrder)
-                @params.Remove(param);
-
-            return result;
+                if(param[0] == '?')
+                    @params.Remove(param);
         }
 
         /// <summary>
@@ -165,13 +180,18 @@ namespace ui_zadanie4
             /// <param name="input">Napisane pravidlo</param>
             public Condition(string input)
             {
-                var regex = new Regex("^\\s*\\<\\>\\s*(\\?[^\\s]+)\\s+(\\?[^\\s]+)\\s*$");
+                //var regex = new Regex("^\\s*\\<\\>\\s*(\\?[^\\s]+)\\s+(\\?[^\\s]+)\\s*$");
+                var regex = new Regex("^\\s*\\<\\>\\s*(((\\?[^\\s]+)\\s+([^\\s]+.*))|(([^\\s]+.*)\\s+(\\?[^\\s]+)))\\s*$");
                 var match = regex.Match(input);
                 if (match.Success)
                 {
                     Compare = true;
-                    ParamsOrder.Add(match.Groups[1].Value);
-                    ParamsOrder.Add(match.Groups[2].Value);
+                    var i = match.Groups.Count - 1;
+                    for (; i >= 0; i--)
+                        if (match.Groups[i].Value.Length > 0)
+                            break;
+                    ParamsOrder.Add(match.Groups[--i].Value);
+                    ParamsOrder.Add(match.Groups[i + 1].Value);
                 }
                 else
                 {

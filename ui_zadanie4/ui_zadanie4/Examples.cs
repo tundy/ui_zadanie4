@@ -58,7 +58,7 @@ POTOM ((pridaj ?Y je brat ?Z))
 
 Stryko:
 AK ((?Y je brat ?Z)(?Z je rodic ?X))
-POTOM ((pridaj ?Y je stryko ?X)(sprava ?X ma stryka))
+POTOM ((!pridaj ?Y je stryko ?X)(sprava ?X ma stryka))
 
 Test mazania:
 AK ((?Y je stryko ?X)(zena ?X))
