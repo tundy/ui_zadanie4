@@ -8,13 +8,12 @@ namespace ui_zadanie4
     {
         private class Pridaj : Action
         {
-            public Pridaj(string input, MainWindow window, bool important) : base(input, window, important)
+            public Pridaj(string input, MainWindow window) : base(input, window)
             {
             }
 
             public override bool DoWork(IReadOnlyDictionary<string, string> parameters)
             {
-                Presiel = false;
                 var regex = new Regex(ToString(parameters, true), RegexOptions.Multiline);
                 var output = ToString(parameters, false);
                 if (regex.IsMatch(Window.Memory.Text))
@@ -24,7 +23,6 @@ namespace ui_zadanie4
                 }
                 Window.DebugOutput.AppendText($"Pridavam: {output}{Environment.NewLine}");
                 Window.Memory.AppendText($"\n{output}");
-                Presiel = true;
                 return true;
             }
         }

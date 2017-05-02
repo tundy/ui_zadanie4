@@ -11,13 +11,12 @@ namespace ui_zadanie4
             public string Vysledok;
             public string Premenna;
 
-            public Eval(string input, MainWindow window, bool important) : base(input, window, important)
+            public Eval(string input, MainWindow window) : base(input, window)
             {
             }
 
             public override bool DoWork(IReadOnlyDictionary<string, string> parameters)
             {
-                Presiel = false;
                 var output = ToString(parameters, false);
                 var temp = output.Split(new[] {'='}, 2, StringSplitOptions.RemoveEmptyEntries);
                 if (MissingValues.Count != 1)
@@ -29,7 +28,6 @@ namespace ui_zadanie4
                 using (var dt = new DataTable())
                     Vysledok = dt.Compute(temp[1], "").ToString();
                 Window.DebugOutput.AppendText($"[{Premenna}]{Vysledok} = {temp[1]} {Environment.NewLine}");
-                Presiel = true;
                 return false;
             }
         }

@@ -16,9 +16,6 @@
             <RowDefinition Height="2*"/>
         </Grid.RowDefinitions>
         <WrapPanel Grid.Row="0">
-            <Button Margin="5" Content="Rodinné vzťahy" Click="FamilyButton_OnClick"/>
-            <Button Margin="5" Content="Fiaty1" Click="FiatsButton_OnClick"/>
-            <Button Margin="5" Content="Fiaty2" Click="Fiats2Button_OnClick"/>
             <Button Margin="5" Content="Načítať" Click="LoadButton_OnClick"/>
             <Button Margin="5" Content="Uložiť" Click="SaveButton_OnClick"/>
             <Button Margin="5" Content="Spracuj" Click="ParseButton_OnClick"/>

@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Windows;
 
 namespace ui_zadanie4
 {
@@ -7,24 +6,20 @@ namespace ui_zadanie4
     {
         private class Sprava : Action
         {
-            public Sprava(string input, MainWindow window, bool important) : base(input, window, important)
+            public string Value { get; private set; }
+
+            public Sprava(string input, MainWindow window) : base(input, window)
             {
             }
 
             public override bool DoWork(IReadOnlyDictionary<string, string> parameters)
             {
-                Presiel = false;
                 var output = ToString(parameters, false);
 #if ZatvorkyPreFakty
-                Window.Output.AppendText(temp.Substring(1, temp.Length-2));
-                if(!Important)
-                    Window.Output.AppendText("\n");
+                Value = output.Substring(1, output.Length-2) + '\n';
 #else
-                Window.Output.AppendText(output);
-                if(!Important)
-                    Window.Output.AppendText("\n");
+                Value = output + '\n';
 #endif
-                Presiel = true;
                 return false;
             }
         }

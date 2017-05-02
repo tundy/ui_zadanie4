@@ -8,13 +8,12 @@ namespace ui_zadanie4
     {
         private class Vymaz : Action
         {
-            public Vymaz(string input, MainWindow window, bool important) : base(input, window, important)
+            public Vymaz(string input, MainWindow window) : base(input, window)
             {
             }
 
             public override bool DoWork(IReadOnlyDictionary<string, string> parameters)
             {
-                Presiel = false;
                 var regex = new Regex(ToString(parameters, true), RegexOptions.Multiline);
                 var output = ToString(parameters, false);
                 var match = regex.Match(Window.Memory.Text);
@@ -25,7 +24,6 @@ namespace ui_zadanie4
                     if (match.Index + match.Length < Window.Memory.Text.Length)
                         part += Environment.NewLine + Window.Memory.Text.Substring(match.Index + match.Length).TrimStart();
                     Window.Memory.Text = part.Trim();
-                    Presiel = true;
                     return false;
                 }
                 Window.DebugOutput.AppendText($"Nenasiel som fakt '{output}' na vymadzanie.{Environment.NewLine}");

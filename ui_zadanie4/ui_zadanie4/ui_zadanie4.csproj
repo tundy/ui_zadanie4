@@ -55,7 +55,6 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Eval.cs" />
-    <Compile Include="Examples.cs" />
     <Compile Include="Rule.cs" />
     <Compile Include="Save.cs" />
     <Compile Include="Sprava.cs" />

@@ -39,6 +39,7 @@ namespace ui_zadanie4
             // Posledne pouzite pravidlo v predchadzajucej iteracii
             var lastUsed = _rules.Count;
             var pocitadlo = 1447;
+            var spravy = new List<string>(2);
             while (change)
             {
                 if (pocitadlo-- == 0)
@@ -53,31 +54,36 @@ namespace ui_zadanie4
                     var rule = _rules[i];
                     foreach (var @params in rule.Check(Memory.Text))
                     {
+                        spravy.Clear();
                         DebugOutput.AppendText($@"Pravidlo '{rule.Name}': ");
                         foreach (var param in @params)
                             DebugOutput.AppendText($@"[{param.Key}]{param.Value} ");
                         DebugOutput.AppendText(Environment.NewLine);
+                        var zmena = false;
                         foreach (var action in rule.Actions)
                         {
                             try
                             {
                                 if (action.DoWork(@params))
                                 {
-                                    change = true;
+                                    zmena = true;
                                     lastUsed = i;
                                 }
                                 if (action is Eval eval)
                                     @params.Add(eval.Premenna, eval.Vysledok);
-                                if (!action.MozemPokracovat)
-                                    break;
+                                if(action is Sprava sprava)
+                                    spravy.Add(sprava.Value);
                             }
                             catch (Exception ex)
                             {
                                 DebugOutput.AppendText($"Exception: '{ex}'{Environment.NewLine}");
-                                if (!action.MozemPokracovat)
-                                    break;
+                                return;
                             }
                         }
+                        change |= zmena;
+                        if (zmena)
+                            foreach (var sprava in spravy)
+                                Output.AppendText(sprava);
                     }
                 }
             }
