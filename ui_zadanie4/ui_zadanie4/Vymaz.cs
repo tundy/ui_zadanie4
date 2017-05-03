@@ -16,17 +16,21 @@ namespace ui_zadanie4
             {
                 var regex = new Regex(ToString(parameters, true), RegexOptions.Multiline);
                 var output = ToString(parameters, false);
-                var match = regex.Match(Window.Memory.Text);
+                var match = regex.Match(Window.GetFakty);
                 if (match.Success)
                 {
-                    Window.DebugOutput.AppendText($"Vymazavam: {output}{Environment.NewLine}");
-                    var part = Window.Memory.Text.Remove(match.Index).TrimEnd();
-                    if (match.Index + match.Length < Window.Memory.Text.Length)
-                        part += Environment.NewLine + Window.Memory.Text.Substring(match.Index + match.Length).TrimStart();
-                    Window.Memory.Text = part.Trim();
+                    Window.Dispatcher.Invoke(() => { 
+                        Window.DebugOutput.AppendText($"Vymazavam: {output}{Environment.NewLine}");
+                        var part = Window.Memory.Text.Remove(match.Index).TrimEnd();
+                        if (match.Index + match.Length < Window.Memory.Text.Length)
+                            part += Environment.NewLine + Window.Memory.Text.Substring(match.Index + match.Length).TrimStart();
+                        Window.Memory.Text = part.Trim();
+                    });
                     return false;
                 }
-                Window.DebugOutput.AppendText($"Nenasiel som fakt '{output}' na vymadzanie.{Environment.NewLine}");
+                Window.Dispatcher.Invoke(() => { 
+                    Window.DebugOutput.AppendText($"Nenasiel som fakt '{output}' na vymadzanie.{Environment.NewLine}");
+                });
                 return false;
             }
         }

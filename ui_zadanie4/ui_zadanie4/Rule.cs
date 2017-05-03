@@ -134,11 +134,12 @@ namespace ui_zadanie4
                     @params.Add(param, group);
                     @new.Add(param);
                 }
+                // nieje to potrebné kedze namiesto (.+) sa tam uz doplna do regexu presna hodnota ako napr. (Peter), cize by ani nenastala zhoda
                 // Ak bola hodnota naplnena predchadzajucov podmienkov musi sa hodnota zhodovat
-                else if (!group.Equals(@params[param]))
+                /*else if (!group.Equals(@params[param]))
                 {
                     yield break;
-                }
+                }*/
             }
 
             // Spracuj dalsiu podmienku pravidla

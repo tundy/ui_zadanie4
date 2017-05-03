@@ -21,13 +21,17 @@ namespace ui_zadanie4
                 var temp = output.Split(new[] {'='}, 2, StringSplitOptions.RemoveEmptyEntries);
                 if (MissingValues.Count != 1)
                 {
-                    Window.DebugOutput.AppendText($"Chybný zápis pre eval: '{output}'{Environment.NewLine}");
+                    Window.Dispatcher.Invoke(() => {
+                        Window.DebugOutput.AppendText($"Chybný zápis pre eval: '{output}'{Environment.NewLine}");
+                    });
                     return false;
                 }
                 Premenna = MissingValues[0];
                 using (var dt = new DataTable())
                     Vysledok = dt.Compute(temp[1], "").ToString();
-                Window.DebugOutput.AppendText($"[{Premenna}]{Vysledok} = {temp[1]} {Environment.NewLine}");
+                Window.Dispatcher.Invoke(() => {
+                    Window.DebugOutput.AppendText($"[{Premenna}]{Vysledok} = {temp[1]} {Environment.NewLine}");
+                });
                 return false;
             }
         }

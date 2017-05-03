@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
 using System.Xml.Serialization;
 using Microsoft.Win32;
 
@@ -19,21 +21,47 @@ namespace ui_zadanie4
     {
         private readonly List<Rule> _rules = new List<Rule>();
 
+        private readonly BackgroundWorker _worker = new BackgroundWorker
+        {
+            WorkerReportsProgress = false,
+            WorkerSupportsCancellation = false
+        };
+
         public MainWindow()
         {
             InitializeComponent();
+            _worker.DoWork += WorkerOnDoWork;
+            _worker.RunWorkerCompleted += WorkerOnRunWorkerCompleted;
         }
 
-        private void ParseButton_OnClick(object sender, RoutedEventArgs e)
+        private void WorkerOnRunWorkerCompleted(object sender, RunWorkerCompletedEventArgs runWorkerCompletedEventArgs)
         {
-            Output.Clear();
-            DebugOutput.Clear();
-            CleanUpMemory();
-#if ZatvorkyPreFakty
-            if (!CheckMemory()) return;
-#endif
-            if (!ParseRules()) return;
+            Dispatcher.Invoke(() =>
+            {
+                Buttons.IsEnabled = true;
+                Memory.IsReadOnly = false;
+                Rules.IsReadOnly = false;
+            });
+        }
 
+        private string GetFakty
+        {
+            get
+            {
+                var result = "";
+                Memory.Dispatcher.Invoke(() => { result = Memory.Text; });
+                return result;
+            }
+        }
+
+        private void WorkerOnDoWork(object sender, DoWorkEventArgs doWorkEventArgs)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                Buttons.IsEnabled = false;
+                Memory.IsReadOnly = true;
+                Rules.IsReadOnly = true;
+            });
             // Nastala zmena tuto iteraciu?
             var change = true;
             // Posledne pouzite pravidlo v predchadzajucej iteracii
@@ -44,7 +72,12 @@ namespace ui_zadanie4
             {
                 if (pocitadlo-- == 0)
                 {
-                    DebugOutput.AppendText($"Spracovanie bolo prerušené (Priveľa iterácií).{Environment.NewLine}");
+                    DebugOutput.Dispatcher.Invoke(
+                        () =>
+                        {
+                            DebugOutput.AppendText(
+                                $"Spracovanie bolo prerušené (Priveľa iterácií).{Environment.NewLine}");
+                        });
                     return;
                 }
                 change = false;
@@ -52,16 +85,18 @@ namespace ui_zadanie4
                 {
                     if (!change && i > lastUsed) break;
                     var rule = _rules[i];
-                    foreach (var @params in rule.Check(Memory.Text))
+                    foreach (var @params in rule.Check(GetFakty))
                     {
                         spravy.Clear();
-                        DebugOutput.AppendText($@"Pravidlo '{rule.Name}': ");
-                        foreach (var param in @params)
-                            DebugOutput.AppendText($@"[{param.Key}]{param.Value} ");
-                        DebugOutput.AppendText(Environment.NewLine);
+                        DebugOutput.Dispatcher.Invoke(() =>
+                        {
+                            DebugOutput.AppendText($@"Pravidlo '{rule.Name}': ");
+                            foreach (var param in @params)
+                                DebugOutput.AppendText($@"[{param.Key}]{param.Value} ");
+                            DebugOutput.AppendText(Environment.NewLine);
+                        });
                         var zmena = false;
                         foreach (var action in rule.Actions)
-                        {
                             try
                             {
                                 if (action.DoWork(@params))
@@ -71,22 +106,35 @@ namespace ui_zadanie4
                                 }
                                 if (action is Eval eval)
                                     @params.Add(eval.Premenna, eval.Vysledok);
-                                if(action is Sprava sprava)
+                                if (action is Sprava sprava)
                                     spravy.Add(sprava.Value);
                             }
                             catch (Exception ex)
                             {
-                                DebugOutput.AppendText($"Exception: '{ex}'{Environment.NewLine}");
+                                DebugOutput.Dispatcher.Invoke(
+                                    () => { DebugOutput.AppendText($"Exception: '{ex}'{Environment.NewLine}"); });
                                 return;
                             }
-                        }
                         change |= zmena;
                         if (zmena)
                             foreach (var sprava in spravy)
-                                Output.AppendText(sprava);
+                                Output.Dispatcher.Invoke(() => { Output.AppendText(sprava); });
                     }
                 }
             }
+        }
+
+
+        private void ParseButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            Output.Clear();
+            DebugOutput.Clear();
+            CleanUpMemory();
+#if ZatvorkyPreFakty
+            if (!CheckMemory()) return;
+#endif
+            if (!ParseRules()) return;
+            _worker.RunWorkerAsync();
         }
 
 #if ZatvorkyPreFakty
@@ -347,6 +395,12 @@ namespace ui_zadanie4
         private void MenuItem_OnClick(object sender, RoutedEventArgs e)
         {
             Output.Clear();
+        }
+
+        private void DebugOutput_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        {
+            if (sender is TextBox textBox)
+                textBox.ScrollToEnd();
         }
     }
 }
