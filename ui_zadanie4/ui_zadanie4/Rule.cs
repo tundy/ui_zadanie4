@@ -1,14 +1,12 @@
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace ui_zadanie4
 {
     // ReSharper disable once UseNameofExpression
     [DebuggerDisplay("{Name}")]
-    internal class Rule
+    internal partial class Rule
     {
         /// <summary>
         ///     Podmienky pravidla
@@ -46,7 +44,11 @@ namespace ui_zadanie4
         {
             // Ak je to posledna podmienka vrat vsetky najdene hodnoty
             if (index >= _conditions.Count)
+            {
+                Debug.WriteLine(@"*Vraciam naplnene premenne*");
                 return new List<Dictionary<string, string>> {new Dictionary<string, string>(@params)};
+            }
+            Debug.WriteLine($@"## Spracovavam podmienku cislo {index}");
 
             // Spracuj podmienku
             var condition = _conditions[index];
@@ -72,7 +74,10 @@ namespace ui_zadanie4
             {
                 // Snazim sa porovnat premenne, kt. ani neexistuju (neboli naplnene) ?
                 if (!@params.ContainsKey(condition.ParamsOrder[1]))
+                {
+                    Debug.WriteLine(@"Chyba pocas porovnanvania premennych");
                     return new List<Dictionary<string, string>>(0);
+                }
 
                 a = condition.ParamsOrder[0];
                 b = @params[condition.ParamsOrder[1]];
@@ -86,6 +91,7 @@ namespace ui_zadanie4
                     : @params[condition.ParamsOrder[1]];
             }
 
+            Debug.WriteLine($@"Porovnavam premenne {a} a {b}");
             // ReSharper disable once PossibleInvalidOperationException
             return condition.Compare.Value == a.Equals(b)
                 ? CheckCondition(index + 1, @params, memory)
@@ -104,6 +110,7 @@ namespace ui_zadanie4
             string memory, Condition condition)
         {
             var reg = new Regex(condition.ToString(@params), RegexOptions.Multiline);
+            Debug.WriteLine($@"Searching for: {reg}");
             var matches = reg.Matches(memory);
             foreach (Match match in matches)
             foreach (var p in CheckFacts(index, @params, memory, match, condition))
@@ -123,7 +130,8 @@ namespace ui_zadanie4
             string memory, Match fakt, Condition condition)
         {
             var @new = new List<string>(3);
-
+            Debug.WriteLine($@"### Nasiel som fakt splnajuci podmienku cislo {index}");
+            Debug.Write(@"Found: ");
             // Vyber najdeneho hodnoty
             for (var j = 1; j < fakt.Groups.Count; j++)
             {
@@ -133,6 +141,7 @@ namespace ui_zadanie4
                 {
                     @params.Add(param, group);
                     @new.Add(param);
+                    Debug.Write($@" [{param}] = {group},");
                 }
                 // nieje to potrebné kedze namiesto (.+) sa tam uz doplna do regexu presna hodnota ako napr. (Peter), cize by ani nenastala zhoda
                 // Ak bola hodnota naplnena predchadzajucov podmienkov musi sa hodnota zhodovat
@@ -141,6 +150,7 @@ namespace ui_zadanie4
                     yield break;
                 }*/
             }
+            Debug.WriteLine("");
 
             // Spracuj dalsiu podmienku pravidla
             foreach (var temp in CheckCondition(index + 1, @params, memory))
@@ -158,108 +168,5 @@ namespace ui_zadanie4
         /// <returns>Najdene premenne, kt. splnili pravidlo</returns>
         public IEnumerable<Dictionary<string, string>> Check(string memory)
             => CheckCondition(0, new Dictionary<string, string>(3), memory);
-
-        private class Condition
-        {
-            /// <summary>
-            ///     Konstantne casti textu
-            /// </summary>
-            private readonly List<Tuple<bool, string>> _parts;
-
-            /// <summary>
-            ///     Jedna sa o pravidlo porovnavania?
-            /// </summary>
-            internal readonly bool? Compare;
-
-            /// <summary>
-            ///     Premenne pravidla
-            /// </summary>
-            internal readonly List<string> ParamsOrder = new List<string>(2);
-
-            /// <summary>
-            ///     Analyzuje string a vytvori k nemu prislichajuce pravidlo
-            /// </summary>
-            /// <param name="input">Napisane pravidlo</param>
-            public Condition(string input)
-            {
-                //var regex = new Regex("^\\s*\\<\\>\\s*(\\?[^\\s]+)\\s+(\\?[^\\s]+)\\s*$");
-                var regex =
-                    new Regex("^\\s*\\<\\>\\s*(((\\?[^\\s]+)\\s+([^\\s]+.*))|(([^\\s]+.*)\\s+(\\?[^\\s]+)))\\s*$");
-                var match = regex.Match(input);
-                if (match.Success)
-                {
-                    Compare = false;
-                    var i = match.Groups.Count - 1;
-                    for (; i >= 0; i--)
-                        if (match.Groups[i].Value.Length > 0)
-                            break;
-                    ParamsOrder.Add(match.Groups[--i].Value);
-                    ParamsOrder.Add(match.Groups[i + 1].Value);
-                }
-                else
-                {
-                    regex =
-                        new Regex("^\\s*\\=\\=\\s*(((\\?[^\\s]+)\\s+([^\\s]+.*))|(([^\\s]+.*)\\s+(\\?[^\\s]+)))\\s*$");
-                    match = regex.Match(input);
-                    if (match.Success)
-                    {
-                        Compare = true;
-                        var i = match.Groups.Count - 1;
-                        for (; i >= 0; i--)
-                            if (match.Groups[i].Value.Length > 0)
-                                break;
-                        ParamsOrder.Add(match.Groups[--i].Value);
-                        ParamsOrder.Add(match.Groups[i + 1].Value);
-                    }
-                    else
-                    {
-                        Compare = null;
-                        _parts = new List<Tuple<bool, string>>(4);
-                        regex = new Regex("(\\?[^\\s]+)|([^\\?]+|\\?[^\\s]{0})");
-                        var matches = regex.Matches(input);
-                        foreach (Match m in matches)
-                        {
-                            var part = m.Value;
-                            if (part[0] != '?' || part.Length == 1)
-                            {
-                                _parts.Add(new Tuple<bool, string>(false, Regex.Escape(part)));
-                            }
-                            else
-                            {
-                                _parts.Add(new Tuple<bool, string>(true, part));
-                                ParamsOrder.Add(part);
-                            }
-                        }
-                    }
-                }
-            }
-
-            /// <summary>
-            ///     Vytvor regex vzor pre hladanie faktov splnajuce tot pravidlo
-            /// </summary>
-            /// <param name="Params">Najdene hodnoty z faktov pouzitim predchadzajucich pravidiel</param>
-            /// <returns>Regex vzor pre hladanie faktov</returns>
-            public string ToString(IReadOnlyDictionary<string, string> Params)
-            {
-                if (Compare.HasValue) return null;
-                var sb = new StringBuilder();
-#if ZatvorkyPreFakty
-                sb.Append("^\\s*\\(");
-#else
-                sb.Append("^");
-#endif
-                foreach (var part in _parts)
-                    if (part.Item1)
-                        sb.Append(Params.ContainsKey(part.Item2) ? $"({Regex.Escape(Params[part.Item2])})" : "(.+)");
-                    else
-                        sb.Append(part.Item2);
-#if ZatvorkyPreFakty
-                sb.Append("\\)\\s*$");
-#else
-                sb.Append("$");
-#endif
-                return sb.ToString();
-            }
-        }
     }
 }

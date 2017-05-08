@@ -45,7 +45,6 @@ namespace ui_zadanie4
             /// </summary>
             /// <param name="input">Hodnota akcie</param>
             /// <param name="window">Okno kde sa prejavia vysledky akcie</param>
-            /// <param name="important"></param>
             protected Action(string input, MainWindow window)
             {
                 Window = window;

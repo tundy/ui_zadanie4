@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace ui_zadanie4
 {
@@ -19,6 +20,7 @@ namespace ui_zadanie4
                 Value = output.Substring(1, output.Length-2) + '\n';
 #else
                 Value = output + '\n';
+                Debug.WriteLine($@"Vytvoril som spravu: {output}");
 #endif
                 return false;
             }

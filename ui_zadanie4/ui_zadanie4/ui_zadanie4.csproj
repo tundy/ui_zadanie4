@@ -54,6 +54,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Condition.cs" />
     <Compile Include="Eval.cs" />
     <Compile Include="Rule.cs" />
     <Compile Include="Save.cs" />

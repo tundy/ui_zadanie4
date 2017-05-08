@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -81,10 +82,13 @@ namespace ui_zadanie4
                     return;
                 }
                 change = false;
+                Debug.WriteLine(@"========================================");
                 for (var i = 0; i < _rules.Count; i++)
                 {
                     if (!change && i > lastUsed) break;
                     var rule = _rules[i];
+                    Debug.WriteLine(@"----------------------------------------");
+                    Debug.WriteLine($@"# Spracovavam pravidlo {rule.Name}");
                     foreach (var @params in rule.Check(GetFakty))
                     {
                         spravy.Clear();
@@ -103,6 +107,7 @@ namespace ui_zadanie4
                                 {
                                     zmena = true;
                                     lastUsed = i;
+                                    Debug.WriteLine(@"Upravili sa fakty, nastav nutnost dalsej iteracie po aktualne pravidlo (vratane)");
                                 }
                                 if (action is Eval eval)
                                     @params.Add(eval.Premenna, eval.Vysledok);
@@ -397,7 +402,7 @@ namespace ui_zadanie4
             Output.Clear();
         }
 
-        private void DebugOutput_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        private void DebugOutput_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (sender is TextBox textBox)
                 textBox.ScrollToEnd();

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 
 namespace ui_zadanie4
@@ -20,11 +21,13 @@ namespace ui_zadanie4
                 {
                     Window.Dispatcher.Invoke(() => {
                         Window.DebugOutput.AppendText($"Fakt '{output}' uz existuje.{Environment.NewLine}");
+                        Debug.WriteLine($@"Fakt '{output}' uz existuje.");
                     });
                     return false;
                 }
                 Window.Dispatcher.Invoke(() => {
                     Window.DebugOutput.AppendText($"Pridavam: {output}{Environment.NewLine}");
+                    Debug.WriteLine($@"Pridavam: {output}");
                     Window.Memory.AppendText($"\n{output}");
                 });
                 return true;
