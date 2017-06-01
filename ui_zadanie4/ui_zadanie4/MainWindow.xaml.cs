@@ -35,6 +35,7 @@ namespace ui_zadanie4
             _worker.RunWorkerCompleted += WorkerOnRunWorkerCompleted;
         }
 
+
         private void WorkerOnRunWorkerCompleted(object sender, RunWorkerCompletedEventArgs runWorkerCompletedEventArgs)
         {
             Dispatcher.Invoke(() =>
@@ -347,6 +348,7 @@ namespace ui_zadanie4
                 DefaultExt = "xml"
             };
             if (dialog.ShowDialog(this) == true)
+            {
                 using (var stream = File.OpenRead(dialog.FileName))
                 {
                     var serializer = new XmlSerializer(typeof(Save));
@@ -364,6 +366,7 @@ namespace ui_zadanie4
                         DebugOutput.AppendText(ex + Environment.NewLine);
                     }
                 }
+            }
         }
 
         private void SaveButton_OnClick(object sender, RoutedEventArgs e)
